@@ -62,6 +62,7 @@ describe('TabNavigation', () => {
 
       expect(screen.getByText('DBC情報')).toBeInTheDocument();
       expect(screen.getByText('CAN値表示')).toBeInTheDocument();
+      expect(screen.getByText('グラフ表示')).toBeInTheDocument();
     });
 
     it('各タブにアイコンが表示される', () => {
@@ -71,9 +72,11 @@ describe('TabNavigation', () => {
       // SVGアイコンが存在することを確認
       const infoTab = screen.getByText('DBC情報').closest('a');
       const valuesTab = screen.getByText('CAN値表示').closest('a');
+      const graphTab = screen.getByText('グラフ表示').closest('a');
 
       expect(infoTab?.querySelector('svg')).toBeInTheDocument();
       expect(valuesTab?.querySelector('svg')).toBeInTheDocument();
+      expect(graphTab?.querySelector('svg')).toBeInTheDocument();
     });
 
     it('適切なリンクが設定されている', () => {
@@ -82,9 +85,11 @@ describe('TabNavigation', () => {
 
       const infoLink = screen.getByText('DBC情報').closest('a');
       const valuesLink = screen.getByText('CAN値表示').closest('a');
+      const graphLink = screen.getByText('グラフ表示').closest('a');
 
       expect(infoLink).toHaveAttribute('href', '/info');
       expect(valuesLink).toHaveAttribute('href', '/values');
+      expect(graphLink).toHaveAttribute('href', '/graph');
     });
   });
 
@@ -192,7 +197,7 @@ describe('TabNavigation', () => {
       expect(tablist).toBeInTheDocument();
 
       const tabs = screen.getAllByRole('tab');
-      expect(tabs).toHaveLength(2);
+      expect(tabs).toHaveLength(3);
     });
 
     it('aria-selected属性が正しく設定される', () => {
