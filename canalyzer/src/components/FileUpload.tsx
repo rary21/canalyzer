@@ -1,13 +1,16 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { DBCParser } from '@/lib/dbc-parser'
 import { ParseResult } from '@/types/dbc'
+import { useDBCContext } from '@/contexts/DBCContext'
 
 export default function FileUpload() {
   const [fileName, setFileName] = useState<string>('')
   const [parseResult, setParseResult] = useState<ParseResult | null>(null)
   const [loading, setLoading] = useState(false)
+  const { setDBCData, setParseResult: setContextParseResult, setFileName: setContextFileName } = useDBCContext()
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -30,6 +33,13 @@ export default function FileUpload() {
       const parser = new DBCParser()
       const result = parser.parse(content)
       setParseResult(result)
+      setContextParseResult(result)
+      setContextFileName(file.name)
+      
+      // パース成功時はDBCデータをコンテキストに保存
+      if (result.success && result.database) {
+        setDBCData(result.database)
+      }
       
       console.log('パース結果:', result)
     } catch (error) {
@@ -100,7 +110,7 @@ export default function FileUpload() {
               {parseResult.database.messages.size > 0 && (
                 <div className="mt-3">
                   <h4 className="text-sm font-medium mb-1">メッセージ一覧（最初の5件）:</h4>
-                  <ul className="text-xs space-y-1">
+                  <ul className="text-xs space-y-1 mb-3">
                     {Array.from(parseResult.database.messages.values())
                       .slice(0, 5)
                       .map((msg) => (
@@ -109,6 +119,13 @@ export default function FileUpload() {
                         </li>
                       ))}
                   </ul>
+                  
+                  <Link 
+                    href="/info"
+                    className="inline-flex items-center px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors"
+                  >
+                    詳細情報を表示 →
+                  </Link>
                 </div>
               )}
             </div>

@@ -12,6 +12,20 @@ export class DBCParser {
     const errors: ParseError[] = [];
     const warnings: ParseWarning[] = [];
 
+    // 入力チェック
+    if (content === null || content === undefined) {
+      errors.push({
+        line: 0,
+        message: '入力が無効です',
+        type: 'SYNTAX_ERROR'
+      });
+      return {
+        success: false,
+        errors,
+        warnings
+      };
+    }
+
     try {
       // DBCファイルをロード
       const dbcData = this.dbc.load(content);
@@ -53,11 +67,11 @@ export class DBCParser {
     }
     
     // dbcDataからノード情報を抽出
-    if (dbcData.nodes && dbcData.nodes instanceof Map) {
-      for (const [nodeName, nodeData] of dbcData.nodes) {
+    if (Array.isArray(dbcData.nodes)) {
+      for (const nodeName of dbcData.nodes) {
         nodes.push({
           name: nodeName,
-          comment: (nodeData as { description?: string }).description || undefined
+          comment: undefined
         });
       }
     }
@@ -97,7 +111,7 @@ export class DBCParser {
               name: signalName,
               startBit: signalData.startBit,
               length: signalData.length,
-              endianness: signalData.endian === 'LITTLE' ? 'little' : 'big',
+              endianness: signalData.endian === 'Intel' ? 'little' : 'big',
               signed: signalData.signed,
               factor: signalData.factor,
               offset: signalData.offset,
