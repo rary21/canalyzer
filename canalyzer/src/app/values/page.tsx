@@ -17,7 +17,10 @@ export default function ValuesPage() {
 
   // 使用するDBCデータを決定
   const activeDBCData = useMemo(() => {
-    return dbcData || (useSampleData ? sampleDBCDatabase : null)
+    if (useSampleData) {
+      return sampleDBCDatabase
+    }
+    return dbcData
   }, [dbcData, useSampleData])
 
   // CANデータをパースしてシグナル値を抽出
@@ -100,7 +103,7 @@ export default function ValuesPage() {
           <div>
             <h1 className="text-3xl font-bold text-gray-900">CAN値表示</h1>
             <p className="text-gray-600 mt-1">
-              {useSampleData && !dbcData ? 'サンプルデータ' : 'アップロードされたDBC'} を使用してCANフレームを解析
+              {useSampleData ? 'サンプルデータ' : 'アップロードされたDBC'} を使用してCANフレームを解析
             </p>
           </div>
           
@@ -189,7 +192,7 @@ export default function ValuesPage() {
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-500">データソース</p>
                   <p className="text-lg font-semibold text-gray-900">
-                    {useSampleData && !dbcData ? 'サンプル' : 'アップロード'}
+                    {useSampleData ? 'サンプル' : 'アップロード'}
                   </p>
                 </div>
               </div>
