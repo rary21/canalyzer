@@ -52,9 +52,9 @@ describe('InfoPage', () => {
 
     render(<InfoPage />)
 
-    expect(screen.getByText('DBC情報')).toBeInTheDocument()
-    expect(screen.getByText('DBCファイルが読み込まれていません')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: '← ホームに戻る' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('DBC情報')
+    expect(screen.getByText('DBC情報を表示するには、DBCファイルが必要です')).toBeInTheDocument()
+    expect(screen.getByText('DBCファイルをアップロード')).toBeInTheDocument()
   })
 
   it('DBCデータがある場合、情報表示コンポーネントをレンダリングする', () => {
@@ -69,7 +69,7 @@ describe('InfoPage', () => {
 
     render(<InfoPage />)
 
-    expect(screen.getByText('DBC情報')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('DBC情報')
     expect(screen.getByText('ファイル: test.dbc')).toBeInTheDocument()
     expect(screen.getByTestId('dbc-info-display')).toBeInTheDocument()
   })
@@ -86,8 +86,8 @@ describe('InfoPage', () => {
 
     render(<InfoPage />)
 
-    const homeLink = screen.getByRole('link', { name: '← ホームに戻る' })
-    expect(homeLink).toHaveAttribute('href', '/')
+    const homeLink = screen.getByText('DBCファイルをアップロード')
+    expect(homeLink.closest('a')).toHaveAttribute('href', '/')
   })
 
   it('ファイル名が設定されていない場合は表示しない', () => {

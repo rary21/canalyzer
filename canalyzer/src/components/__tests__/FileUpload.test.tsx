@@ -13,7 +13,7 @@ jest.mock('@/lib/dbc-parser', () => ({
 
 // File.prototype.textをモック
 Object.defineProperty(File.prototype, 'text', {
-  value: jest.fn().mockImplementation(function() {
+  value: jest.fn().mockImplementation(function(this: File) {
     return Promise.resolve(this.name.includes('.dbc') ? 'VERSION ""\\n\\nBU_ ECU1\\n' : 'invalid content');
   }),
   writable: true,
