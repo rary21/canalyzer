@@ -24,6 +24,8 @@ export interface CANFrame {
 export interface CANValue {
   /** シグナル名 */
   signalName: string;
+  /** メッセージ名 */
+  messageName: string;
   /** 生の値（スケーリング前） */
   rawValue: number;
   /** 物理値（factor/offset適用後） */

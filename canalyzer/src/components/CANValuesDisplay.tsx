@@ -8,7 +8,7 @@ interface CANValuesDisplayProps {
   isLoading?: boolean
 }
 
-type SortField = 'signalName' | 'timestamp' | 'physicalValue' | 'rawValue'
+type SortField = 'signalName' | 'messageName' | 'timestamp' | 'physicalValue' | 'rawValue'
 type SortDirection = 'asc' | 'desc'
 
 export default function CANValuesDisplay({ values, isLoading = false }: CANValuesDisplayProps) {
@@ -27,6 +27,7 @@ export default function CANValuesDisplay({ values, isLoading = false }: CANValue
       const query = searchQuery.toLowerCase()
       filtered = filtered.filter(value =>
         value.signalName.toLowerCase().includes(query) ||
+        value.messageName.toLowerCase().includes(query) ||
         value.unit.toLowerCase().includes(query) ||
         (value.description && value.description.toLowerCase().includes(query))
       )
@@ -162,7 +163,7 @@ export default function CANValuesDisplay({ values, isLoading = false }: CANValue
             </div>
             <input
               type="text"
-              placeholder="シグナル名、単位、説明で検索..."
+              placeholder="シグナル名、メッセージ名、単位、説明で検索..."
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value)
@@ -179,6 +180,16 @@ export default function CANValuesDisplay({ values, isLoading = false }: CANValue
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                onClick={() => handleSort('messageName')}
+              >
+                <div className="flex items-center space-x-1">
+                  <span>メッセージ名</span>
+                  {getSortIcon('messageName')}
+                </div>
+              </th>
               <th
                 scope="col"
                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
@@ -230,6 +241,9 @@ export default function CANValuesDisplay({ values, isLoading = false }: CANValue
           <tbody className="bg-white divide-y divide-gray-200">
             {paginatedValues.map((value, index) => (
               <tr key={`${value.signalName}-${value.timestamp}-${index}`} className="hover:bg-gray-50">
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                  {value.messageName}
+                </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                   {value.signalName}
                 </td>

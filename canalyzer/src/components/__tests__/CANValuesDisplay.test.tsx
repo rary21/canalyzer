@@ -7,6 +7,7 @@ describe('CANValuesDisplay', () => {
   const mockValues: CANValue[] = [
     {
       signalName: 'Engine_RPM',
+      messageName: 'Engine_Status',
       rawValue: 800,
       physicalValue: 200.0,
       unit: 'rpm',
@@ -15,6 +16,7 @@ describe('CANValuesDisplay', () => {
     },
     {
       signalName: 'Vehicle_Speed',
+      messageName: 'Vehicle_Status',
       rawValue: 1000,
       physicalValue: 10.0,
       unit: 'km/h',
@@ -22,6 +24,7 @@ describe('CANValuesDisplay', () => {
     },
     {
       signalName: 'Engine_Temp',
+      messageName: 'Engine_Status',
       rawValue: 80,
       physicalValue: 40.0,
       unit: '°C',
@@ -30,6 +33,7 @@ describe('CANValuesDisplay', () => {
     },
     {
       signalName: 'Brake_Pedal',
+      messageName: 'Brake_Status',
       rawValue: 1,
       physicalValue: 1,
       unit: '',
@@ -80,7 +84,7 @@ describe('CANValuesDisplay', () => {
     it('シグナル名で検索できる', async () => {
       render(<CANValuesDisplay values={mockValues} />);
 
-      const searchInput = screen.getByPlaceholderText('シグナル名、単位、説明で検索...');
+      const searchInput = screen.getByPlaceholderText('シグナル名、メッセージ名、単位、説明で検索...');
       fireEvent.change(searchInput, { target: { value: 'Engine' } });
 
       await waitFor(() => {
@@ -95,7 +99,7 @@ describe('CANValuesDisplay', () => {
     it('単位で検索できる', async () => {
       render(<CANValuesDisplay values={mockValues} />);
 
-      const searchInput = screen.getByPlaceholderText('シグナル名、単位、説明で検索...');
+      const searchInput = screen.getByPlaceholderText('シグナル名、メッセージ名、単位、説明で検索...');
       fireEvent.change(searchInput, { target: { value: 'rpm' } });
 
       await waitFor(() => {
@@ -109,7 +113,7 @@ describe('CANValuesDisplay', () => {
     it('説明で検索できる', async () => {
       render(<CANValuesDisplay values={mockValues} />);
 
-      const searchInput = screen.getByPlaceholderText('シグナル名、単位、説明で検索...');
+      const searchInput = screen.getByPlaceholderText('シグナル名、メッセージ名、単位、説明で検索...');
       fireEvent.change(searchInput, { target: { value: '冷却水' } });
 
       await waitFor(() => {
@@ -123,7 +127,7 @@ describe('CANValuesDisplay', () => {
     it('大文字小文字を区別しない検索', async () => {
       render(<CANValuesDisplay values={mockValues} />);
 
-      const searchInput = screen.getByPlaceholderText('シグナル名、単位、説明で検索...');
+      const searchInput = screen.getByPlaceholderText('シグナル名、メッセージ名、単位、説明で検索...');
       fireEvent.change(searchInput, { target: { value: 'engine' } });
 
       await waitFor(() => {
@@ -137,7 +141,7 @@ describe('CANValuesDisplay', () => {
     it('検索結果がない場合の表示', async () => {
       render(<CANValuesDisplay values={mockValues} />);
 
-      const searchInput = screen.getByPlaceholderText('シグナル名、単位、説明で検索...');
+      const searchInput = screen.getByPlaceholderText('シグナル名、メッセージ名、単位、説明で検索...');
       fireEvent.change(searchInput, { target: { value: 'NonExistent' } });
 
       await waitFor(() => {
@@ -226,6 +230,7 @@ describe('CANValuesDisplay', () => {
     // 51個のテストデータを生成（ページネーションをテストするため）
     const manyValues: CANValue[] = Array.from({ length: 51 }, (_, i) => ({
       signalName: `Signal_${i}`,
+      messageName: 'TestMessage',
       rawValue: i,
       physicalValue: i * 0.1,
       unit: 'unit',
@@ -302,7 +307,7 @@ describe('CANValuesDisplay', () => {
       });
 
       // 検索を実行
-      const searchInput = screen.getByPlaceholderText('シグナル名、単位、説明で検索...');
+      const searchInput = screen.getByPlaceholderText('シグナル名、メッセージ名、単位、説明で検索...');
       fireEvent.change(searchInput, { target: { value: 'Signal_1' } });
 
       await waitFor(() => {
@@ -316,6 +321,7 @@ describe('CANValuesDisplay', () => {
     it('タイムスタンプが正しい形式で表示される', () => {
       const testValue: CANValue = {
         signalName: 'TestSignal',
+        messageName: 'TestMessage',
         rawValue: 100,
         physicalValue: 10.0,
         unit: 'unit',
@@ -332,6 +338,7 @@ describe('CANValuesDisplay', () => {
       const testValues: CANValue[] = [
         {
           signalName: 'IntegerValue',
+          messageName: 'TestMessage',
           rawValue: 100,
           physicalValue: 100,
           unit: 'count',
@@ -339,6 +346,7 @@ describe('CANValuesDisplay', () => {
         },
         {
           signalName: 'DecimalValue',
+          messageName: 'TestMessage',
           rawValue: 1234,
           physicalValue: 12.345,
           unit: 'value',
@@ -363,6 +371,7 @@ describe('CANValuesDisplay', () => {
     it('単位が空文字の場合にダッシュが表示される', () => {
       const testValue: CANValue = {
         signalName: 'NoUnitSignal',
+        messageName: 'TestMessage',
         rawValue: 1,
         physicalValue: 1,
         unit: '',
@@ -378,6 +387,7 @@ describe('CANValuesDisplay', () => {
     it('説明がない場合にダッシュが表示される', () => {
       const testValue: CANValue = {
         signalName: 'NoDescSignal',
+        messageName: 'TestMessage',
         rawValue: 1,
         physicalValue: 1,
         unit: 'unit',
@@ -395,6 +405,7 @@ describe('CANValuesDisplay', () => {
     it('モバイル用のページネーションボタンが表示される', () => {
       const manyValues: CANValue[] = Array.from({ length: 51 }, (_, i) => ({
         signalName: `Signal_${i}`,
+        messageName: 'TestMessage',
         rawValue: i,
         physicalValue: i * 0.1,
         unit: 'unit',
@@ -414,7 +425,7 @@ describe('CANValuesDisplay', () => {
       render(<CANValuesDisplay values={mockValues} />);
 
       // テーブルのアクセシビリティ
-      expect(screen.getAllByRole('columnheader')).toHaveLength(6);
+      expect(screen.getAllByRole('columnheader')).toHaveLength(7);
       expect(screen.getAllByRole('row')).toHaveLength(5); // ヘッダー + 4データ行
     });
 

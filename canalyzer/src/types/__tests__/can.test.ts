@@ -57,6 +57,7 @@ describe('CAN型定義', () => {
     it('正しい構造を持つ', () => {
       const value: CANValue = {
         signalName: 'TestSignal',
+        messageName: 'TestMessage',
         rawValue: 100,
         physicalValue: 10.0,
         unit: 'km/h',
@@ -73,6 +74,7 @@ describe('CAN型定義', () => {
     it('オプショナルなdescriptionフィールドをサポートする', () => {
       const valueWithDescription: CANValue = {
         signalName: 'GearPosition',
+        messageName: 'Transmission_Status',
         rawValue: 3,
         physicalValue: 3,
         unit: '',
@@ -86,6 +88,7 @@ describe('CAN型定義', () => {
     it('descriptionなしでも正常に動作する', () => {
       const valueWithoutDescription: CANValue = {
         signalName: 'Speed',
+        messageName: 'Vehicle_Status',
         rawValue: 1000,
         physicalValue: 10.0,
         unit: 'km/h',
@@ -111,6 +114,7 @@ describe('CAN型定義', () => {
       const values: CANValue[] = [
         {
           signalName: 'TestSignal',
+          messageName: 'TestMessage',
           rawValue: 1,
           physicalValue: 1.0,
           unit: 'unit',
@@ -157,6 +161,7 @@ describe('CAN型定義', () => {
       const signals: CANValue[] = [
         {
           signalName: 'TestSignal',
+          messageName: 'TestMessage',
           rawValue: 1,
           physicalValue: 1.0,
           unit: 'unit',
@@ -322,6 +327,7 @@ describe('CAN型定義', () => {
 
       const value: CANValue = {
         signalName: 'TestSignal',
+        messageName: 'TestMessage',
         rawValue: 0x42,
         physicalValue: 66,
         unit: 'count',
@@ -350,6 +356,7 @@ describe('CAN型定義', () => {
 
       const value: CANValue = {
         signalName: 'TestSignal',
+        messageName: 'TestMessage',
         rawValue: 0x42,
         physicalValue: 66,
         unit: 'count',
@@ -430,6 +437,7 @@ describe('CAN型定義', () => {
     it('NaN値を持つCANValueを処理できる', () => {
       const nanValue: CANValue = {
         signalName: 'InvalidSignal',
+        messageName: 'TestMessage',
         rawValue: 0,
         physicalValue: NaN,
         unit: 'unit',
@@ -442,6 +450,7 @@ describe('CAN型定義', () => {
     it('Infinity値を持つCANValueを処理できる', () => {
       const infinityValue: CANValue = {
         signalName: 'OverflowSignal',
+        messageName: 'TestMessage',
         rawValue: 0xFFFF,
         physicalValue: Infinity,
         unit: 'unit',

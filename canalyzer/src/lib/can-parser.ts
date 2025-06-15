@@ -145,6 +145,7 @@ export class CANParser {
 
       return {
         signalName: signal.name,
+        messageName: this.database.messages.get(frame.id)?.name || 'Unknown',
         rawValue,
         physicalValue,
         unit: signal.unit,

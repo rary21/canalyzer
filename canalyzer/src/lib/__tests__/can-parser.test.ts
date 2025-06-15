@@ -357,6 +357,7 @@ describe('CANParser', () => {
       const values: CANValue[] = [
         {
           signalName: 'TestSignal',
+          messageName: 'TestMessage',
           rawValue: 10,
           physicalValue: 10,
           unit: 'unit',
@@ -364,6 +365,7 @@ describe('CANParser', () => {
         },
         {
           signalName: 'TestSignal',
+          messageName: 'TestMessage',
           rawValue: 20,
           physicalValue: 20,
           unit: 'unit',
@@ -371,6 +373,7 @@ describe('CANParser', () => {
         },
         {
           signalName: 'OtherSignal',
+          messageName: 'OtherMessage',
           rawValue: 30,
           physicalValue: 30,
           unit: 'unit',
@@ -389,6 +392,7 @@ describe('CANParser', () => {
       const values: CANValue[] = [
         {
           signalName: 'TestSignal',
+          messageName: 'TestMessage',
           rawValue: 20,
           physicalValue: 20,
           unit: 'unit',
@@ -396,6 +400,7 @@ describe('CANParser', () => {
         },
         {
           signalName: 'TestSignal',
+          messageName: 'TestMessage',
           rawValue: 10,
           physicalValue: 10,
           unit: 'unit',
@@ -415,6 +420,7 @@ describe('CANParser', () => {
       const values: CANValue[] = [
         {
           signalName: 'TestSignal',
+          messageName: 'TestMessage',
           rawValue: 10,
           physicalValue: 10,
           unit: 'unit',
@@ -422,6 +428,7 @@ describe('CANParser', () => {
         },
         {
           signalName: 'TestSignal',
+          messageName: 'TestMessage',
           rawValue: 20,
           physicalValue: 20,
           unit: 'unit',
@@ -429,6 +436,7 @@ describe('CANParser', () => {
         },
         {
           signalName: 'TestSignal',
+          messageName: 'TestMessage',
           rawValue: 30,
           physicalValue: 30,
           unit: 'unit',
@@ -457,6 +465,7 @@ describe('CANParser', () => {
       const values: CANValue[] = [
         {
           signalName: 'TestSignal',
+          messageName: 'TestMessage',
           rawValue: 10,
           physicalValue: 10,
           unit: 'unit',
@@ -464,6 +473,7 @@ describe('CANParser', () => {
         },
         {
           signalName: 'TestSignal',
+          messageName: 'TestMessage',
           rawValue: 20,
           physicalValue: NaN,
           unit: 'unit',
@@ -471,6 +481,7 @@ describe('CANParser', () => {
         },
         {
           signalName: 'TestSignal',
+          messageName: 'TestMessage',
           rawValue: 30,
           physicalValue: 30,
           unit: 'unit',
