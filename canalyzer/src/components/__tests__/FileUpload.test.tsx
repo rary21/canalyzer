@@ -140,6 +140,8 @@ describe('FileUpload', () => {
     });
     
     expect(screen.getByText('メッセージ数:')).toBeInTheDocument();
+    expect(screen.getByText('DBC情報を表示 →')).toBeInTheDocument();
+    expect(screen.getByText('CAN値を表示 →')).toBeInTheDocument();
   });
 
   it('パース失敗時にエラーが表示される', async () => {

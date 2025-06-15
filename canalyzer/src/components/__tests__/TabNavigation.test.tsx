@@ -144,39 +144,32 @@ describe('TabNavigation', () => {
     });
   });
 
-  describe('DBCデータの有無による表示の変化', () => {
-    it('DBCデータがある場合は通常表示', () => {
+  describe('DBCデータの有無による表示', () => {
+    it('DBCデータがある場合も通常表示される', () => {
       mockUsePathname.mockReturnValue('/info');
       renderWithDBCContext(mockDBCData);
 
       const infoTab = screen.getByText('DBC情報').closest('a');
       const valuesTab = screen.getByText('CAN値表示').closest('a');
 
-      // DBCデータがある場合はopacity-75クラスが適用されない
-      expect(infoTab?.className).not.toContain('opacity-75');
-      expect(valuesTab?.className).not.toContain('opacity-75');
-      expect(screen.queryByText('(要DBC)')).not.toBeInTheDocument();
+      // タブは常に通常表示される
+      expect(infoTab).toBeInTheDocument();
+      expect(valuesTab).toBeInTheDocument();
     });
 
-    it('DBCデータがない場合は薄い表示になる', () => {
+    it('DBCデータがない場合でも通常表示される', () => {
       mockUsePathname.mockReturnValue('/info');
       renderWithDBCContext(null); // DBCデータなし
 
       const infoTab = screen.getByText('DBC情報').closest('a');
       const valuesTab = screen.getByText('CAN値表示').closest('a');
 
-      expect(infoTab).toHaveClass('opacity-75');
-      expect(valuesTab).toHaveClass('opacity-75');
+      // タブは常に通常表示される
+      expect(infoTab).toBeInTheDocument();
+      expect(valuesTab).toBeInTheDocument();
     });
 
-    it('DBCデータがない場合にDBC情報タブに注記が表示される', () => {
-      mockUsePathname.mockReturnValue('/info');
-      renderWithDBCContext(null);
-
-      expect(screen.getByText('(要DBC)')).toBeInTheDocument();
-    });
-
-    it('DBCデータがない場合でもタブは機能する', () => {
+    it('DBCデータの有無に関係なくタブが機能する', () => {
       mockUsePathname.mockReturnValue('/values');
       renderWithDBCContext(null);
 

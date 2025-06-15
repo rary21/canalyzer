@@ -120,12 +120,20 @@ export default function FileUpload() {
                       ))}
                   </ul>
                   
-                  <Link 
-                    href="/info"
-                    className="inline-flex items-center px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors"
-                  >
-                    詳細情報を表示 →
-                  </Link>
+                  <div className="flex space-x-2">
+                    <Link 
+                      href="/info"
+                      className="inline-flex items-center px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors"
+                    >
+                      DBC情報を表示 →
+                    </Link>
+                    <Link 
+                      href="/values"
+                      className="inline-flex items-center px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition-colors"
+                    >
+                      CAN値を表示 →
+                    </Link>
+                  </div>
                 </div>
               )}
             </div>

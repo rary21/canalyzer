@@ -14,10 +14,12 @@ interface TabItem {
 
 export default function TabNavigation() {
   const pathname = usePathname()
+  // DBCコンテキストは利用可能だが、タブ表示には影響しない
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { dbcData } = useDBCContext()
 
-  // DBCデータが読み込まれていない場合でも常にタブを表示
-  // ユーザーがページ間を移動できるようにする
+  // DBCデータの有無に関係なく常にタブを表示
+  // DBCファイルを読み込んだらすぐにタブ切り替えができるようにする
 
   const tabs: TabItem[] = [
     {
@@ -61,14 +63,10 @@ export default function TabNavigation() {
                     ? 'border-blue-500 text-blue-600 tab-active'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }
-                  ${!dbcData ? 'opacity-75' : ''}
                 `}
               >
                 {tab.icon}
                 <span>{tab.label}</span>
-                {!dbcData && tab.id === 'info' && (
-                  <span className="ml-1 text-xs text-gray-400">(要DBC)</span>
-                )}
               </Link>
             )
           })}
