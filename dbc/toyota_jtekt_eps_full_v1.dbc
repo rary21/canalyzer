@@ -1,0 +1,520 @@
+VERSION ""
+
+
+NS_ : 
+	NS_DESC_
+	CM_
+	BA_DEF_
+	BA_
+	VAL_
+	CAT_DEF_
+	CAT_
+	FILTER
+	BA_DEF_DEF_
+	EV_DATA_
+	ENVVAR_DATA_
+	SGTYPE_
+	SGTYPE_VAL_
+	BA_DEF_SGTYPE_
+	BA_SGTYPE_
+	SIG_TYPE_REF_
+	VAL_TABLE_
+	SIG_GROUP_
+	SIG_VALTYPE_
+	SIGTYPE_VALTYPE_
+	BO_TX_BU_
+	BA_DEF_REL_
+	BA_REL_
+	BA_DEF_DEF_REL_
+	BU_SG_REL_
+	BU_EV_REL_
+	BU_BO_REL_
+	SG_MUL_VAL_
+
+BS_:
+
+BU_:
+
+
+BO_ 594 ABX1S11: 5 Vector__XXX
+ SG_ CHECKSUM : 39|8@0+ (1,0) [0|255] "" Vector__XXX
+ SG_ Fail_RESET_F : 0|1@0+ (1,0) [0|1] "" Vector__XXX
+
+BO_ 1224 EPS1N01: 8 Vector__XXX
+ SG_ EPSSPF : 23|16@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ EPSSNG : 15|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ EPSNID : 7|8@0+ (1,0) [0|255] "" Vector__XXX
+
+BO_ 849 PMG1S02: 4 Vector__XXX
+ SG_ LCLVL : 23|3@0+ (1,0) [0|7] "" Vector__XXX
+
+BO_ 1187 EPS1D50: 8 Vector__XXX
+ SG_ DREPS08 : 63|8@0+ (1,0) [0|255] "" Vector__XXX
+ SG_ DREPS07 : 55|8@0+ (1,0) [0|255] "" Vector__XXX
+ SG_ DREPS06 : 47|8@0+ (1,0) [0|255] "" Vector__XXX
+ SG_ DREPS05 : 39|8@0+ (1,0) [0|255] "" Vector__XXX
+ SG_ DREPS04 : 31|8@0+ (1,0) [0|255] "" Vector__XXX
+ SG_ DREPS03 : 23|8@0+ (1,0) [0|255] "" Vector__XXX
+ SG_ DREPS02 : 15|8@0+ (1,0) [0|255] "" Vector__XXX
+ SG_ DREPS01 : 7|8@0+ (1,0) [0|255] "" Vector__XXX
+
+BO_ 1021 MET1S00: 8 Vector__XXX
+ SG_ METD_MST : 23|8@0+ (1,0) [0|255] "" Vector__XXX
+
+BO_ 1022 ECU1S00: 8 Vector__XXX
+ SG_ METD_CD7 : 63|8@0+ (1,0) [0|255] "" Vector__XXX
+ SG_ METD_CD6 : 55|8@0+ (1,0) [0|255] "" Vector__XXX
+ SG_ METD_CD5 : 47|8@0+ (1,0) [0|255] "" Vector__XXX
+ SG_ METD_CD4 : 39|8@0+ (1,0) [0|255] "" Vector__XXX
+ SG_ METD_CD3 : 31|8@0+ (1,0) [0|255] "" Vector__XXX
+ SG_ METD_CD2 : 23|8@0+ (1,0) [0|255] "" Vector__XXX
+ SG_ METD_CD1 : 15|8@0+ (1,0) [0|255] "" Vector__XXX
+ SG_ METD_SYS : 7|8@0+ (1,0) [0|255] "" Vector__XXX
+
+BO_ 36 YGS1S03: 8 Vector__XXX
+ SG_ CHECKSUM : 63|8@0+ (1,0) [0|255] "" Vector__XXX
+ SG_ YR_DIF : 55|8@0+ (1,0) [0|255] "deg/s" Vector__XXX
+ SG_ GL2Y : 33|10@0+ (1,0) [0|1023] "m/s2" Vector__XXX
+ SG_ GS2S : 34|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ GS5S : 35|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ YG_ID : 39|4@0+ (1,0) [0|15] "" Vector__XXX
+ SG_ GL1X : 17|10@0+ (1,0) [0|1023] "m/s2" Vector__XXX
+ SG_ GS1S : 18|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ GS4S : 19|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ YR_CPUMN : 23|4@0+ (1,0) [0|15] "" Vector__XXX
+ SG_ YR : 1|10@0+ (1,0) [0|1023] "deg/s" Vector__XXX
+ SG_ YGS0 : 2|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ YGS1 : 3|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ YRS24S : 4|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ YRS21S : 5|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ YRS14S : 6|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ YRS11S : 7|1@0+ (1,0) [0|1] "" Vector__XXX
+
+BO_ 614 IPA1S03: 8 Vector__XXX
+ SG_ IPAMD : 46|2@0+ (1,0) [0|3] "" Vector__XXX
+ SG_ CHECKSUM : 63|8@0+ (1,0) [0|255] "" Vector__XXX
+ SG_ IPASCS : 38|2@0+ (1,0) [0|3] "" Vector__XXX
+ SG_ ZSA : 19|12@0- (1.5,0) [-1000|1000] "deg" Vector__XXX
+ SG_ ZSAE : 20|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ TSA : 3|12@0- (1.5,0) [-1000|1000] "deg" Vector__XXX
+ SG_ IPASYS : 4|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ IPAACT : 5|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ IPAFAIL : 6|1@0+ (1,0) [0|1] "" Vector__XXX
+
+BO_ 1017 ENG1F03: 8 Vector__XXX
+ SG_ HVFLAG : 10|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ CHECKSUM : 63|8@0+ (1,0) [0|255] "" Vector__XXX
+ SG_ OBDINF : 27|4@0+ (1,0) [0|15] "" Vector__XXX
+ SG_ GEARINF : 19|4@0+ (1,0) [0|15] "" Vector__XXX
+ SG_ DVINF : 31|2@0+ (1,0) [0|3] "" Vector__XXX
+ SG_ VARTRM1 : 23|4@0+ (1,0) [0|15] "" Vector__XXX
+ SG_ VARENG4 : 11|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ VARENG3 : 15|4@0+ (1,0) [0|15] "" Vector__XXX
+ SG_ VARENG2 : 3|4@0+ (1,0) [0|15] "" Vector__XXX
+ SG_ VARENG1 : 7|4@0+ (1,0) [0|15] "" Vector__XXX
+
+BO_ 355 ECO1S01: 5 Vector__XXX
+ SG_ BPHLDRQ2 : 35|2@0+ (1,0) [0|3] "" Vector__XXX
+ SG_ FCREQ : 31|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ ECOSTAON : 19|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ ECOMODE : 18|3@0+ (1,0) [0|7] "" Vector__XXX
+ SG_ ECOEGSTP : 33|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ BPHLDRQ : 36|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ ENSTRST : 22|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ PBKER : 23|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ DPBK : 7|16@0- (0.01953125,0) [-640|639.98] "kPa" Vector__XXX
+
+BO_ 705 ENG1S01: 8 Vector__XXX
+ SG_ ETQREAL : 31|16@0- (0.03125,0) [-1000|1000] "Nm" Vector__XXX
+ SG_ ETQLVSC : 15|16@0- (0.03125,0) [-1000|1000] "Nm" Vector__XXX
+ SG_ WTC : 0|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ CHECKSUM : 63|8@0+ (1,0) [0|255] "" Vector__XXX
+
+BO_ 1056 VSC1S08: 8 Vector__XXX
+ SG_ YRZS : 49|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ CHECKSUM : 63|8@0+ (1,0) [0|255] "" Vector__XXX
+ SG_ YRZF : 50|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ GLZS : 51|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ YRGSDIR : 55|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ GL2Z : 47|8@0- (0.0359,0) [-4.5|4.5] "m/s2" Vector__XXX
+ SG_ GL1Z : 39|8@0- (0.0359,0) [-4.5|4.5] "m/s2" Vector__XXX
+ SG_ YR2Z : 23|16@0- (0.0305,0) [-999|999] "rad/s" Vector__XXX
+ SG_ YR1Z : 7|16@0- (0.0305,0) [-999|999] "rad/s" Vector__XXX
+
+BO_ 550 VSC1F06: 8 Vector__XXX
+ SG_ ABSACT : 59|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ VSCACT : 36|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ WSTP : 37|1@0+ (1,0) [0|1] "" Vector__XXX
+
+BO_ 544 VSC2F07: 4 Vector__XXX
+ SG_ CHECKSUM : 31|8@0+ (1,0) [0|255] "" Vector__XXX
+ SG_ TRCACT : 15|1@0+ (1,0) [0|1] "" Vector__XXX
+
+BO_ 180 VSC1S03: 8 Vector__XXX
+ SG_ SP1S : 33|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ CHECKSUM : 63|8@0+ (1,0) [0|255] "" Vector__XXX
+ SG_ TGSQF : 32|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ SP1 : 47|16@0- (0.01,0) [-100|320] "km/h" Vector__XXX
+ SG_ TGTQ : 23|16@0- (0.005,0) [-160|160] "Nm" Vector__XXX
+ SG_ VHCLSTAT : 7|16@0- (1,0) [-32000|32000] "deg" Vector__XXX
+
+BO_ 452 ENG1F07: 8 Vector__XXX
+ SG_ NE1 : 7|16@0- (0.78125,0) [-10000|25000] "rpm" Vector__XXX
+ SG_ CHECKSUM : 63|8@0+ (1,0) [0|255] "" Vector__XXX
+
+BO_ 595 EPS1S11: 8 Vector__XXX
+ SG_ FailMode_F : 15|8@0+ (1,0) [0|255] "" Vector__XXX
+
+BO_ 593 EPS1S10: 8 Vector__XXX
+ SG_ EPS_Main_F : 0|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ EPS_ACTANG : 31|16@0- (0.03125,0) [-1000|1000] "" Vector__XXX
+ SG_ EPS_Fail_F : 1|1@0+ (1,0) [0|1] "" Vector__XXX
+
+BO_ 592 ABX1S10: 8 Vector__XXX
+ SG_ ABX10_TGTANG_M : 31|16@0- (0.03125,0) [-1000|1000] "deg" Vector__XXX
+ SG_ ABX10_CTRL_F : 0|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ ABX10_WD : 47|8@0+ (1,0) [0|255] "" Vector__XXX
+ SG_ CHECKSUM : 63|8@0+ (1,0) [0|255] "" Vector__XXX
+ SG_ ABX10_TGTANG : 15|16@0- (0.03125,0) [-1000|1000] "deg" Vector__XXX
+
+BO_ 37 STR1S01: 8 Vector__XXX
+ SG_ SSAZ : 19|12@0- (1.5,0) [-1000|1000] "deg" Vector__XXX
+ SG_ SAZS : 23|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ STS1 : 5|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ STS2 : 6|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ STS3 : 7|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ SSA : 3|12@0- (1.5,0) [-1000|1000] "deg" Vector__XXX
+ SG_ SSAS : 39|4@0- (0.1,0) [-0.8|0.7] "deg" Vector__XXX
+ SG_ STDID : 51|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ CHECKSUM : 63|8@0+ (1,0) [0|255] "" Vector__XXX
+ SG_ SSAV : 35|12@0- (1,0) [-2000|2000] "deg/s" Vector__XXX
+
+BO_ 170 VSC1F01: 8 Vector__XXX
+ SG_ VXRREF : 39|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ VXRR : 38|15@0+ (1,0) [0|32000] "0.01km/h" Vector__XXX
+ SG_ VXRLEF : 55|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ VXRL : 54|15@0+ (1,0) [0|32000] "0.01km/h" Vector__XXX
+ SG_ VXFREF : 7|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ VXFR : 6|15@0+ (1,0) [0|32000] "0.01km/h" Vector__XXX
+ SG_ VXFLEF : 23|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ VXFL : 22|15@0+ (1,0) [0|32000] "0.01km/h" Vector__XXX
+
+BO_ 765 DS11S23: 8 Vector__XXX
+ SG_ SM2FD : 63|8@0+ (1,0) [0|255] "" Vector__XXX
+ SG_ STSZSTS : 37|2@0+ (1,0) [0|3] "" Vector__XXX
+ SG_ ESTZSTS : 39|2@0+ (1,0) [0|3] "" Vector__XXX
+ SG_ STSZ : 23|16@0- (0.001,0) [-32|32] "rad" Vector__XXX
+ SG_ ESTZ : 7|16@0- (0.001,0) [-32|32] "rad" Vector__XXX
+
+BO_ 401 DS11S09: 8 Vector__XXX
+ SG_ SRQACT : 0|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ SRQANG : 15|16@0- (0.001,0) [-32|32] "rad" Vector__XXX
+ SG_ SCMEXIST : 29|2@0+ (1,0) [0|3] "" Vector__XXX
+ SG_ PCSACT : 27|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ LDAACT : 26|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ LTCACT : 25|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ SRQCOUNT : 6|6@0+ (1,0) [0|63] "" Vector__XXX
+ SG_ SM191 : 63|8@0+ (1,0) [0|255] "" Vector__XXX
+ SG_ CMCURV : 55|8@0- (0.0001,0) [-0.0128|0.0127] "1/m" Vector__XXX
+ SG_ SYSGAIN : 47|8@0+ (0.01,0) [0|2.55] "" Vector__XXX
+ SG_ DMPGAIN : 39|8@0+ (0.01,0) [0|2.55] "" Vector__XXX
+ SG_ LKAACT : 24|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ DRSTR : 30|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ SRQEXIST : 7|1@0+ (1,0) [0|1] "" Vector__XXX
+
+BO_ 1572 BDB1S08: 8 Vector__XXX
+ SG_ DS_PACK2 : 39|8@0+ (1,0) [0|255] "" Vector__XXX
+ SG_ DS_PACK1 : 31|8@0+ (1,0) [0|255] "" Vector__XXX
+ SG_ U2OP_DFT : 60|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ U2OP_CST : 61|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ DBLLCK : 62|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ KEYPLATE : 55|8@0+ (1,0) [0|255] "" Vector__XXX
+ SG_ DEICER : 40|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ STRG_WHL : 47|2@0+ (1,0) [0|3] "" Vector__XXX
+ SG_ DEST_BDB : 23|8@0+ (1,0) [0|255] "" Vector__XXX
+ SG_ BDB08_IF : 15|8@0+ (1,0) [0|255] "" Vector__XXX
+ SG_ BDB08_ID : 7|8@0+ (1,0) [0|255] "" Vector__XXX
+
+BO_ 1595 BDB1F03: 8 Vector__XXX
+ SG_ TIME_CNT : 39|32@0+ (100,0) [0|429496729500] "ms" Vector__XXX
+ SG_ TRIP_CNT : 23|16@0+ (1,0) [0|65535] "trip" Vector__XXX
+ SG_ BDBF03IF : 15|8@0+ (1,0) [0|255] "" Vector__XXX
+ SG_ BDBF03ID : 7|8@0+ (1,0) [0|255] "" Vector__XXX
+
+BO_ 740 ACC1S09: 5 Vector__XXX
+ SG_ CHECKSUM : 39|8@0+ (1,0) [0|255] "" Vector__XXX
+ SG_ LKKPACT : 31|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ LKTRQ : 15|16@0- (0.01,0) [-320|320] "Nm" Vector__XXX
+ SG_ LKFACT : 0|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ LKCOUNT : 6|6@0+ (1,0) [0|63] "" Vector__XXX
+ SG_ LKEXIST : 7|1@0+ (1,0) [0|1] "" Vector__XXX
+
+BO_ 916 EPS1S90: 3 Vector__XXX
+ SG_ EPS_METD : 6|3@0+ (1,0) [0|7] "" Vector__XXX
+ SG_ TS_EPS : 3|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ EPS_REMT : 16|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ EPS_MINF : 19|3@0+ (1,0) [0|7] "" Vector__XXX
+ SG_ EPS_WLMP : 13|3@0+ (1,0) [0|7] "" Vector__XXX
+ SG_ EPS_BZER : 15|2@0+ (1,0) [0|3] "" Vector__XXX
+
+BO_ 610 EPS1S02: 8 Vector__XXX
+ SG_ CHECKSUM : 63|8@0+ (1,0) [0|255] "" Vector__XXX
+ SG_ EPSTEMP2 : 55|8@0+ (0.5,0) [0|127.5] "��" Vector__XXX
+ SG_ EPSTEMP1 : 47|8@0+ (0.5,0) [0|127.5] "��" Vector__XXX
+ SG_ ESTZUDS : 36|2@0+ (1,0) [0|3] "" Vector__XXX
+ SG_ ESTZ2E : 37|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ GRDF : 38|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ DGRDF : 39|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ EPSBRUSH : 24|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ EPSSYS2 : 25|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ EPSFCM2 : 26|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ EPSACT2 : 27|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ EPSBKUP : 28|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ EPSFTRQ : 29|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ EPSCD : 30|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ EPSTG : 31|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ EPSSYS3 : 11|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ EPSFCM3 : 12|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ EPSACT3 : 13|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ EPSBKUP2 : 14|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ EPSFANG : 15|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ EPSSYS : 0|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ EPSACT : 1|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ EPSSTS0 : 2|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ EPSFCM : 5|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ EPSSPD : 6|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ EPSFAIL : 7|1@0+ (1,0) [0|1] "" Vector__XXX
+
+BO_ 608 EPS1S01: 8 Vector__XXX
+ SG_ EPS_TS : 5|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ CHECKSUM : 63|8@0+ (1,0) [0|255] "" Vector__XXX
+ SG_ IPS : 47|16@0- (0.01,0) [-320|320] "A" Vector__XXX
+ SG_ EST2 : 31|16@0- (0.001,0) [-32|32] "rad" Vector__XXX
+ SG_ TRQSENS : 15|16@0- (0.01,0) [-320|320] "Nm" Vector__XXX
+ SG_ EMIDP : 0|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ TRQSENSF : 1|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ IPSF : 2|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ EST2F : 3|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ EPSF : 4|1@0+ (1,0) [0|1] "" Vector__XXX
+ SG_ EPENABLE : 7|1@0+ (1,0) [0|1] "" Vector__XXX
+
+BO_ 1953 DIAG_SEND: 8 Vector__XXX
+ SG_ DIAG_TYPE : 7|8@0+ (1,0) [0|255] "" Vector__XXX
+ SG_ DIAG_REQ1 : 15|8@0+ (1,0) [0|255] "" Vector__XXX
+ SG_ DIAG_REQ2 : 23|8@0+ (1,0) [0|255] "" Vector__XXX
+ SG_ DIAG_REQ3 : 31|8@0+ (1,0) [0|255] "" Vector__XXX
+ SG_ DIAG_REQ4 : 39|8@0+ (1,0) [0|255] "" Vector__XXX
+ SG_ DIAG_REQ5 : 47|8@0+ (1,0) [0|255] "" Vector__XXX
+ SG_ DIAG_REQ6 : 55|8@0+ (1,0) [0|255] "" Vector__XXX
+ SG_ DIAG_REQ7 : 63|8@0+ (1,0) [0|255] "" Vector__XXX
+
+BO_ 1961 DIAG_RESPONSE: 8 Vector__XXX
+ SG_ DIAG_VALID_BYTES : 7|8@0+ (1,0) [0|7] "" Vector__XXX
+ SG_ DIAG_RES1 : 15|16@0+ (1,0) [0|65535] "" Vector__XXX
+ SG_ DIAG_RES2 : 31|16@0+ (1,0) [0|65535] "" Vector__XXX
+ SG_ DIAG_RES3 : 47|16@0+ (1,0) [0|65535] "" Vector__XXX
+
+BA_DEF_ SG_  "GenSigInactiveValue" INT 0 0;
+BA_DEF_ BO_  "GenMsgFastOnStart" INT 0 100000;
+BA_DEF_ BO_  "GenMsgCycleTimeFast" INT 0 3600000;
+BA_DEF_ BO_  "GenMsgNrOfRepetition" INT 0 1000000;
+BA_DEF_ BO_  "TpJ1939VarDlc" ENUM  "No","Yes";
+BA_DEF_  "SAE_J1939_81_SpecVersion" STRING ;
+BA_DEF_  "SAE_J1939_DA_SpecVersion" STRING ;
+BA_DEF_  "DBName" STRING ;
+BA_DEF_ SG_  "SAEDocument" STRING ;
+BA_DEF_ SG_  "DDI" INT 0 65535;
+BA_DEF_ SG_  "SPN" INT 0 524287;
+BA_DEF_ SG_  "GenSigEVName" STRING ;
+BA_DEF_ SG_  "GenSigILSupport" ENUM  "Yes","No";
+BA_DEF_ SG_  "GenSigSendType" ENUM  "Cyclic","OnWrite","reserved","OnChange","reserved","reserved","reserved","NoSigSendType";
+BA_DEF_ SG_  "GenSigStartValue" INT 0 10000;
+BA_DEF_ SG_  "SigType" ENUM  "Default","Range","RangeSigned","ASCII","Discrete","Control","ReferencePGN","DTC","StringDelimiter","StringLength","StringLengthControl";
+BA_DEF_ BO_  "SAE_Document" STRING ;
+BA_DEF_ BO_  "GenMsgCycleTime" INT 0 3600000;
+BA_DEF_ BO_  "SingleFrame" INT 0 1;
+BA_DEF_ BO_  "VFrameFormat" ENUM  "StandardCAN","ExtendedCAN","reserved","J1939PG","reserved","reserved","reserved","reserved","reserved","reserved","reserved","reserved","reserved","reserved","StandardCAN_FD","ExtendedCAN_FD";
+BA_DEF_ BO_  "GenMsgSendType" ENUM  "cyclic","reserved","cyclicIfActive","reserved","reserved","reserved","reserved","reserved","noMsgSendType";
+BA_DEF_ BO_  "GenMsgRequestable" INT 0 1;
+BA_DEF_ BO_  "GenMsgDelayTime" INT 0 1000;
+BA_DEF_ BO_  "GenMsgILSupport" ENUM  "Yes","No";
+BA_DEF_ BO_  "GenMsgStartDelayTime" INT 0 100000;
+BA_DEF_ BU_  "ECU" STRING ;
+BA_DEF_ BU_  "NmJ1939IdentityNumber" INT 0 2097151;
+BA_DEF_ BU_  "NmJ1939ManufacturerCode" INT 0 2047;
+BA_DEF_ BU_  "NmJ1939ECUInstance" INT 0 3;
+BA_DEF_ BU_  "NmJ1939FunctionInstance" INT 0 7;
+BA_DEF_ BU_  "NmJ1939Function" INT 0 255;
+BA_DEF_ BU_  "NmJ1939SystemInstance" INT 0 15;
+BA_DEF_ BU_  "NmJ1939System" INT 0 127;
+BA_DEF_ BU_  "NmJ1939IndustryGroup" INT 0 7;
+BA_DEF_ BU_  "NmJ1939AAC" INT 0 1;
+BA_DEF_ BU_  "NmStationAddress" INT 0 255;
+BA_DEF_ BU_  "NodeLayerModules" STRING ;
+BA_DEF_  "SAE_J1939_71_SpecVersion" STRING ;
+BA_DEF_  "SAE_J1939_73_SpecVersion" STRING ;
+BA_DEF_  "SAE_J1939_21_SpecVersion" STRING ;
+BA_DEF_  "SAE_J1939_75_SpecVersion" STRING ;
+BA_DEF_  "ProtocolType" STRING ;
+BA_DEF_  "DatabaseVersion" STRING ;
+BA_DEF_  "BusType" STRING ;
+BA_DEF_DEF_  "GenSigInactiveValue" 0;
+BA_DEF_DEF_  "GenMsgFastOnStart" 0;
+BA_DEF_DEF_  "GenMsgCycleTimeFast" 0;
+BA_DEF_DEF_  "GenMsgNrOfRepetition" 0;
+BA_DEF_DEF_  "TpJ1939VarDlc" "No";
+BA_DEF_DEF_  "SAE_J1939_81_SpecVersion" "";
+BA_DEF_DEF_  "SAE_J1939_DA_SpecVersion" "";
+BA_DEF_DEF_  "DBName" "";
+BA_DEF_DEF_  "SAEDocument" "";
+BA_DEF_DEF_  "DDI" 0;
+BA_DEF_DEF_  "SPN" 0;
+BA_DEF_DEF_  "GenSigEVName" "Env@Nodename_@Signame";
+BA_DEF_DEF_  "GenSigILSupport" "Yes";
+BA_DEF_DEF_  "GenSigSendType" "NoSigSendType";
+BA_DEF_DEF_  "GenSigStartValue" 0;
+BA_DEF_DEF_  "SigType" "Default";
+BA_DEF_DEF_  "SAE_Document" "";
+BA_DEF_DEF_  "GenMsgCycleTime" 0;
+BA_DEF_DEF_  "SingleFrame" 1;
+BA_DEF_DEF_  "VFrameFormat" "ExtendedCAN_FD";
+BA_DEF_DEF_  "GenMsgSendType" "noMsgSendType";
+BA_DEF_DEF_  "GenMsgRequestable" 1;
+BA_DEF_DEF_  "GenMsgDelayTime" 0;
+BA_DEF_DEF_  "GenMsgILSupport" "Yes";
+BA_DEF_DEF_  "GenMsgStartDelayTime" 0;
+BA_DEF_DEF_  "ECU" "";
+BA_DEF_DEF_  "NmJ1939IdentityNumber" 0;
+BA_DEF_DEF_  "NmJ1939ManufacturerCode" 0;
+BA_DEF_DEF_  "NmJ1939ECUInstance" 0;
+BA_DEF_DEF_  "NmJ1939FunctionInstance" 0;
+BA_DEF_DEF_  "NmJ1939Function" 0;
+BA_DEF_DEF_  "NmJ1939SystemInstance" 0;
+BA_DEF_DEF_  "NmJ1939System" 0;
+BA_DEF_DEF_  "NmJ1939IndustryGroup" 0;
+BA_DEF_DEF_  "NmJ1939AAC" 0;
+BA_DEF_DEF_  "NmStationAddress" 254;
+BA_DEF_DEF_  "NodeLayerModules" "";
+BA_DEF_DEF_  "SAE_J1939_71_SpecVersion" "";
+BA_DEF_DEF_  "SAE_J1939_73_SpecVersion" "";
+BA_DEF_DEF_  "SAE_J1939_21_SpecVersion" "";
+BA_DEF_DEF_  "SAE_J1939_75_SpecVersion" "";
+BA_DEF_DEF_  "ProtocolType" "";
+BA_DEF_DEF_  "DatabaseVersion" "";
+BA_DEF_DEF_  "BusType" "CAN";
+BA_ "BusType" "CAN";
+BA_ "DBName" "jtekt_eps_full_v1";
+BA_ "VFrameFormat" BO_ 594 0;
+BA_ "GenMsgCycleTime" BO_ 594 100;
+BA_ "GenMsgCycleTime" BO_ 1224 980;
+BA_ "VFrameFormat" BO_ 1224 0;
+BA_ "VFrameFormat" BO_ 849 0;
+BA_ "GenMsgCycleTime" BO_ 849 1000;
+BA_ "GenMsgCycleTime" BO_ 1187 500;
+BA_ "VFrameFormat" BO_ 1187 0;
+BA_ "GenMsgCycleTime" BO_ 1021 150;
+BA_ "VFrameFormat" BO_ 1021 0;
+BA_ "VFrameFormat" BO_ 1022 0;
+BA_ "GenMsgCycleTime" BO_ 1022 1000;
+BA_ "GenMsgCycleTime" BO_ 36 12;
+BA_ "VFrameFormat" BO_ 36 0;
+BA_ "VFrameFormat" BO_ 614 0;
+BA_ "GenMsgCycleTime" BO_ 614 24;
+BA_ "GenMsgCycleTime" BO_ 1017 250;
+BA_ "VFrameFormat" BO_ 1017 0;
+BA_ "GenMsgCycleTime" BO_ 355 16;
+BA_ "VFrameFormat" BO_ 355 0;
+BA_ "VFrameFormat" BO_ 705 0;
+BA_ "GenMsgCycleTime" BO_ 705 32;
+BA_ "VFrameFormat" BO_ 1056 0;
+BA_ "GenMsgCycleTime" BO_ 1056 984;
+BA_ "VFrameFormat" BO_ 550 0;
+BA_ "GenMsgCycleTime" BO_ 550 24;
+BA_ "VFrameFormat" BO_ 544 0;
+BA_ "GenMsgCycleTime" BO_ 544 24;
+BA_ "GenMsgCycleTime" BO_ 180 24;
+BA_ "VFrameFormat" BO_ 180 0;
+BA_ "GenMsgCycleTime" BO_ 452 24;
+BA_ "VFrameFormat" BO_ 452 0;
+BA_ "GenMsgCycleTime" BO_ 595 40;
+BA_ "VFrameFormat" BO_ 595 0;
+BA_ "GenMsgCycleTime" BO_ 593 10;
+BA_ "VFrameFormat" BO_ 593 0;
+BA_ "GenMsgCycleTime" BO_ 592 10;
+BA_ "VFrameFormat" BO_ 592 0;
+BA_ "VFrameFormat" BO_ 37 0;
+BA_ "GenMsgCycleTime" BO_ 37 12;
+BA_ "VFrameFormat" BO_ 170 0;
+BA_ "GenMsgCycleTime" BO_ 170 12;
+BA_ "VFrameFormat" BO_ 765 0;
+BA_ "GenMsgCycleTime" BO_ 765 1000;
+BA_ "VFrameFormat" BO_ 401 0;
+BA_ "GenMsgCycleTime" BO_ 401 24;
+BA_ "VFrameFormat" BO_ 1572 0;
+BA_ "GenMsgCycleTime" BO_ 1572 1000;
+BA_ "VFrameFormat" BO_ 1595 0;
+BA_ "GenMsgCycleTime" BO_ 1595 500;
+BA_ "VFrameFormat" BO_ 740 0;
+BA_ "GenMsgCycleTime" BO_ 740 24;
+BA_ "GenMsgCycleTime" BO_ 916 300;
+BA_ "VFrameFormat" BO_ 916 0;
+BA_ "GenMsgCycleTime" BO_ 610 40;
+BA_ "VFrameFormat" BO_ 610 0;
+BA_ "GenMsgCycleTime" BO_ 608 20;
+BA_ "VFrameFormat" BO_ 608 0;
+BA_ "GenSigStartValue" SG_ 36 CHECKSUM 26;
+BA_ "GenSigStartValue" SG_ 36 YR_DIF 128;
+BA_ "GenSigStartValue" SG_ 36 GL2Y 512;
+BA_ "GenSigStartValue" SG_ 36 GS5S 1;
+BA_ "GenSigStartValue" SG_ 36 GL1X 512;
+BA_ "GenSigStartValue" SG_ 36 GS4S 1;
+BA_ "GenSigStartValue" SG_ 36 YR 512;
+BA_ "GenSigStartValue" SG_ 36 YGS1 1;
+BA_ "GenSigStartValue" SG_ 36 YRS24S 1;
+BA_ "GenSigStartValue" SG_ 36 YRS14S 1;
+BA_ "GenSigStartValue" SG_ 614 CHECKSUM 112;
+BA_ "GenSigStartValue" SG_ 1017 CHECKSUM 201;
+BA_ "GenSigStartValue" SG_ 1017 OBDINF 15;
+BA_ "GenSigStartValue" SG_ 1017 GEARINF 15;
+BA_ "GenSigStartValue" SG_ 1017 DVINF 3;
+BA_ "GenSigStartValue" SG_ 1017 VARTRM1 15;
+BA_ "GenSigStartValue" SG_ 1017 VARENG4 1;
+BA_ "GenSigStartValue" SG_ 1017 VARENG3 15;
+BA_ "GenSigStartValue" SG_ 1017 VARENG2 15;
+BA_ "GenSigStartValue" SG_ 1017 VARENG1 15;
+BA_ "GenSigStartValue" SG_ 355 ECOMODE 0;
+BA_ "GenSigStartValue" SG_ 705 CHECKSUM 203;
+BA_ "GenSigStartValue" SG_ 1056 YRZS 1;
+BA_ "GenSigStartValue" SG_ 1056 CHECKSUM 54;
+BA_ "GenSigStartValue" SG_ 1056 GLZS 1;
+BA_ "GenSigStartValue" SG_ 544 CHECKSUM 38;
+BA_ "GenSigStartValue" SG_ 180 SP1S 1;
+BA_ "GenSigStartValue" SG_ 180 SP1 0;
+BA_ "GenSigStartValue" SG_ 452 NE1 1638.4;
+BA_ "GenSigStartValue" SG_ 452 CHECKSUM 210;
+BA_ "GenSigStartValue" SG_ 37 SSAZ 0;
+BA_ "GenSigStartValue" SG_ 37 STDID 1;
+BA_ "GenSigStartValue" SG_ 37 CHECKSUM 61;
+BA_ "GenSigStartValue" SG_ 170 VXRREF 0;
+BA_ "GenSigStartValue" SG_ 170 VXRR 6767;
+BA_ "GenSigStartValue" SG_ 170 VXRLEF 0;
+BA_ "GenSigStartValue" SG_ 170 VXRL 6767;
+BA_ "GenSigStartValue" SG_ 170 VXFREF 0;
+BA_ "GenSigStartValue" SG_ 170 VXFR 6767;
+BA_ "GenSigStartValue" SG_ 170 VXFLEF 0;
+BA_ "GenSigStartValue" SG_ 170 VXFL 6767;
+BA_ "GenSigStartValue" SG_ 765 SM2FD 167;
+BA_ "GenSigStartValue" SG_ 765 STSZSTS 2;
+BA_ "GenSigStartValue" SG_ 765 ESTZSTS 2;
+BA_ "GenSigStartValue" SG_ 401 SCMEXIST 3;
+BA_ "GenSigStartValue" SG_ 401 SM191 202;
+BA_ "GenSigStartValue" SG_ 401 SRQEXIST 0;
+BA_ "GenSigStartValue" SG_ 1572 DS_PACK2 255;
+BA_ "GenSigStartValue" SG_ 1572 DS_PACK1 255;
+BA_ "GenSigStartValue" SG_ 1572 KEYPLATE 255;
+BA_ "GenSigStartValue" SG_ 1572 DEICER 1;
+BA_ "GenSigStartValue" SG_ 1572 STRG_WHL 3;
+BA_ "GenSigStartValue" SG_ 1572 DEST_BDB 255;
+BA_ "GenSigStartValue" SG_ 740 LKFACT 0;
+BA_ "GenSigStartValue" SG_ 740 LKEXIST 0;
+
