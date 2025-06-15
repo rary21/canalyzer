@@ -44,15 +44,20 @@ export class DBCParser {
     }
   }
 
-  private extractNodes(dbcData: any): CANNode[] {
+  private extractNodes(dbcData: unknown): CANNode[] {
     const nodes: CANNode[] = [];
+    
+    // 型ガード
+    if (!this.isDbcData(dbcData)) {
+      return nodes;
+    }
     
     // dbcDataからノード情報を抽出
     if (dbcData.nodes && dbcData.nodes instanceof Map) {
       for (const [nodeName, nodeData] of dbcData.nodes) {
         nodes.push({
           name: nodeName,
-          comment: nodeData.description || undefined
+          comment: (nodeData as { description?: string }).description || undefined
         });
       }
     }
@@ -60,55 +65,97 @@ export class DBCParser {
     return nodes;
   }
 
-  private extractMessages(dbcData: any): Map<number, CANMessage> {
+  private extractMessages(dbcData: unknown): Map<number, CANMessage> {
     const messages = new Map<number, CANMessage>();
+
+    // 型ガード
+    if (!this.isDbcData(dbcData)) {
+      return messages;
+    }
 
     // dbcDataからメッセージ情報を抽出
     if (dbcData.messages && dbcData.messages instanceof Map) {
       for (const [messageName, dbcMessage] of dbcData.messages) {
+        const messageData = dbcMessage as DbcMessage;
         const signals: CANSignal[] = [];
 
         // シグナル情報を抽出
-        if (dbcMessage.signals && dbcMessage.signals instanceof Map) {
-          for (const [signalName, dbcSignal] of dbcMessage.signals) {
+        if (messageData.signals && messageData.signals instanceof Map) {
+          for (const [signalName, dbcSignal] of messageData.signals) {
+            const signalData = dbcSignal as DbcSignal;
+            
             // 値テーブルをオブジェクトに変換
             let values: Record<number, string> | undefined;
-            if (dbcSignal.valueTable && dbcSignal.valueTable instanceof Map) {
+            if (signalData.valueTable && signalData.valueTable instanceof Map) {
               values = {};
-              for (const [key, value] of dbcSignal.valueTable) {
+              for (const [key, value] of signalData.valueTable) {
                 values[key] = value;
               }
             }
 
             signals.push({
               name: signalName,
-              startBit: dbcSignal.startBit,
-              length: dbcSignal.length,
-              endianness: dbcSignal.endian === 'LITTLE' ? 'little' : 'big',
-              signed: dbcSignal.signed,
-              factor: dbcSignal.factor,
-              offset: dbcSignal.offset,
-              min: dbcSignal.min,
-              max: dbcSignal.max,
-              unit: dbcSignal.unit || '',
-              receivingNodes: dbcSignal.receivingNodes || [],
+              startBit: signalData.startBit,
+              length: signalData.length,
+              endianness: signalData.endian === 'LITTLE' ? 'little' : 'big',
+              signed: signalData.signed,
+              factor: signalData.factor,
+              offset: signalData.offset,
+              min: signalData.min,
+              max: signalData.max,
+              unit: signalData.unit || '',
+              receivingNodes: signalData.receivingNodes || [],
               values,
-              comment: dbcSignal.description || undefined
+              comment: signalData.description || undefined
             });
           }
         }
 
-        messages.set(dbcMessage.id, {
-          id: dbcMessage.id,
+        messages.set(messageData.id, {
+          id: messageData.id,
           name: messageName,
-          length: dbcMessage.dlc,
-          sendingNode: dbcMessage.sendingNode || '',
+          length: messageData.dlc,
+          sendingNode: messageData.sendingNode || '',
           signals,
-          comment: dbcMessage.description || undefined
+          comment: messageData.description || undefined
         });
       }
     }
 
     return messages;
   }
+
+  private isDbcData(data: unknown): data is DbcDataType {
+    return typeof data === 'object' && data !== null;
+  }
+}
+
+// 型定義を追加
+interface DbcDataType {
+  version?: string;
+  nodes?: Map<string, unknown>;
+  messages?: Map<string, unknown>;
+}
+
+interface DbcMessage {
+  id: number;
+  dlc: number;
+  sendingNode?: string;
+  description?: string;
+  signals?: Map<string, unknown>;
+}
+
+interface DbcSignal {
+  startBit: number;
+  length: number;
+  endian: string;
+  signed: boolean;
+  factor: number;
+  offset: number;
+  min: number;
+  max: number;
+  unit?: string;
+  receivingNodes?: string[];
+  valueTable?: Map<number, string>;
+  description?: string;
 }
