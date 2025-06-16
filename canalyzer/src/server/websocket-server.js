@@ -329,17 +329,37 @@ class CANWebSocketServer {
     }
 
     try {
-      // CANフレームの検証
+      // CANフレームの検証とデータ変換
+      let frameData = [];
+      if (frame.data) {
+        if (Array.isArray(frame.data)) {
+          frameData = frame.data;
+        } else if (
+          typeof frame.data === 'object' &&
+          frame.data.constructor?.name === 'Object'
+        ) {
+          // Uint8ArrayがObjectとして送信された場合（{0: val1, 1: val2, ...}）
+          frameData = Object.values(frame.data);
+        } else if (frame.data.length !== undefined) {
+          // array-likeオブジェクトの場合
+          frameData = Array.from(frame.data);
+        }
+      }
+
       const validatedFrame = {
         id: frame.id,
-        data: new Uint8Array(frame.data || []),
+        data: new Uint8Array(frameData),
         timestamp: frame.timestamp || Date.now(),
         extended: frame.extended || false,
-        dlc: frame.dlc || (frame.data ? frame.data.length : 0),
+        dlc: frame.dlc || frameData.length,
       };
 
       console.log(
-        `Received CAN frame from client: ID=0x${validatedFrame.id.toString(16).toUpperCase().padStart(3, '0')}, DLC=${validatedFrame.dlc}`
+        `Received CAN frame from client: ID=0x${validatedFrame.id.toString(16).toUpperCase().padStart(3, '0')}, DLC=${validatedFrame.dlc}, data=[${Array.from(
+          validatedFrame.data
+        )
+          .map((b) => '0x' + b.toString(16).toUpperCase().padStart(2, '0'))
+          .join(', ')}]`
       );
 
       // 送信されたフレームを他のクライアントにブロードキャスト
