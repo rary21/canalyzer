@@ -34,6 +34,7 @@ export function RealtimeDataProvider({ children }: RealtimeDataProviderProps) {
 
   // ローカル状態
   const [isStreaming, setIsStreaming] = useState(false);
+  const [pendingStart, setPendingStart] = useState(false); // 接続待ちフラグ
   const [currentData, setCurrentData] = useState<Map<number, CANFrame>>(
     new Map()
   );
@@ -103,6 +104,16 @@ export function RealtimeDataProvider({ children }: RealtimeDataProviderProps) {
     });
   }, [lastFrame]);
 
+  // 接続状態変更時の処理（ストリーミング開始の待機処理）
+  useEffect(() => {
+    if (isConnected && pendingStart) {
+      // 接続完了時にストリーミングを開始
+      startStreaming();
+      setIsStreaming(true);
+      setPendingStart(false);
+    }
+  }, [isConnected, pendingStart, startStreaming]);
+
   // 接続時間の更新
   useEffect(() => {
     if (!isConnected) return;
@@ -121,11 +132,11 @@ export function RealtimeDataProvider({ children }: RealtimeDataProviderProps) {
   // リアルタイム開始
   const startRealtime = useCallback(async () => {
     if (!isConnected) {
+      // 接続を開始し、完了時にストリーミングを開始するフラグを設定
+      setPendingStart(true);
       connect();
-    }
-
-    // 接続が確立されるまで待機
-    if (isConnected) {
+    } else {
+      // 既に接続済みの場合は即座にストリーミング開始
       startStreaming();
       setIsStreaming(true);
     }
@@ -135,6 +146,7 @@ export function RealtimeDataProvider({ children }: RealtimeDataProviderProps) {
   const stopRealtime = useCallback(() => {
     stopStreaming();
     setIsStreaming(false);
+    setPendingStart(false); // 待機フラグもリセット
   }, [stopStreaming]);
 
   const contextValue: RealtimeDataContextType = {
