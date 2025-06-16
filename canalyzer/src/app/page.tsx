@@ -1,4 +1,4 @@
-import FileUpload from "@/components/FileUpload";
+import FileUpload from '@/components/FileUpload';
 
 export default function Home() {
   return (
@@ -7,7 +7,7 @@ export default function Home() {
         <h1 className="text-4xl font-bold mb-4">CANalyzer</h1>
         <p className="text-xl text-gray-600">CAN信号解析ツール</p>
       </div>
-      
+
       <FileUpload />
     </main>
   );

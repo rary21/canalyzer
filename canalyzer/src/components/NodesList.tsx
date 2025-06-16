@@ -1,7 +1,7 @@
-import { CANNode } from '@/types/dbc'
+import { CANNode } from '@/types/dbc';
 
 interface NodesListProps {
-  nodes: CANNode[]
+  nodes: CANNode[];
 }
 
 export default function NodesList({ nodes }: NodesListProps) {
@@ -10,7 +10,7 @@ export default function NodesList({ nodes }: NodesListProps) {
       <div className="text-center py-8">
         <p className="text-gray-500">ノードが定義されていません</p>
       </div>
-    )
+    );
   }
 
   return (
@@ -30,11 +30,11 @@ export default function NodesList({ nodes }: NodesListProps) {
               <h3 className="font-medium text-gray-900">{node.name}</h3>
               <span className="text-xs text-gray-400">#{index + 1}</span>
             </div>
-            
+
             {node.comment && (
               <p className="text-sm text-gray-600 mt-2">{node.comment}</p>
             )}
-            
+
             {!node.comment && (
               <p className="text-sm text-gray-400 italic">コメントなし</p>
             )}
@@ -42,5 +42,5 @@ export default function NodesList({ nodes }: NodesListProps) {
         ))}
       </div>
     </div>
-  )
+  );
 }

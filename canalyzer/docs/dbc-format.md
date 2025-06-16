@@ -9,13 +9,15 @@ DBC (Database CAN) ファイルは、CAN (Controller Area Network) ネットワ�
 DBCファイルは以下の要素で構成されます：
 
 ### 1. バージョン情報
+
 ```
 VERSION ""
 ```
 
-### 2. 新規シンボル定義 (NS_)
+### 2. 新規シンボル定義 (NS\_)
+
 ```
-NS_ : 
+NS_ :
   NS_DESC_
   CM_
   BA_DEF_
@@ -24,21 +26,26 @@ NS_ :
   ...
 ```
 
-### 3. ビット速度 (BS_)
+### 3. ビット速度 (BS\_)
+
 ```
 BS_: <baudrate>
 ```
 
-### 4. ノード定義 (BU_)
+### 4. ノード定義 (BU\_)
+
 ```
 BU_ <Node1> <Node2> ... <NodeN>
 ```
+
 例：`BU_ ECU1 ECU2 Gateway`
 
-### 5. メッセージ定義 (BO_)
+### 5. メッセージ定義 (BO\_)
+
 ```
 BO_ <CAN-ID> <MessageName>: <MessageSize> <SendingNode>
 ```
+
 - CAN-ID: 10進数または16進数のメッセージID
 - MessageName: メッセージ名
 - MessageSize: バイト単位のメッセージサイズ（0-8）
@@ -46,10 +53,12 @@ BO_ <CAN-ID> <MessageName>: <MessageSize> <SendingNode>
 
 例：`BO_ 100 EngineData: 8 ECU1`
 
-### 6. シグナル定義 (SG_)
+### 6. シグナル定義 (SG\_)
+
 ```
 SG_ <SignalName> : <StartBit>|<Length>@<Endianness><Signed> (<Factor>,<Offset>) [<Min>|<Max>] "<Unit>" <ReceivingNodes>
 ```
+
 - SignalName: シグナル名
 - StartBit: 開始ビット位置
 - Length: ビット長
@@ -63,17 +72,21 @@ SG_ <SignalName> : <StartBit>|<Length>@<Endianness><Signed> (<Factor>,<Offset>) 
 
 例：`SG_ EngineSpeed : 0|16@1+ (0.25,0) [0|16383.75] "rpm" Gateway,Display`
 
-### 7. 値の説明 (VAL_)
+### 7. 値の説明 (VAL\_)
+
 ```
 VAL_ <CAN-ID> <SignalName> <Value> "<Description>" ;
 ```
+
 例：`VAL_ 100 GearPosition 0 "Park" 1 "Reverse" 2 "Neutral" 3 "Drive" ;`
 
-### 8. コメント (CM_)
+### 8. コメント (CM\_)
+
 ```
 CM_ <Object> <Comment>;
 ```
-- Object: BU_ "NodeName"、BO_ CAN-ID、SG_ CAN-ID SignalName など
+
+- Object: BU* "NodeName"、BO* CAN-ID、SG\_ CAN-ID SignalName など
 
 例：`CM_ BO_ 100 "Engine control unit main data";`
 
@@ -88,11 +101,13 @@ CM_ <Object> <Comment>;
 ## 実装方針
 
 1. **段階的パース**:
+
    - 第1段階: メッセージとシグナルの基本情報のみ
    - 第2段階: 値の説明、コメントなどの付加情報
    - 第3段階: 属性定義などの高度な機能
 
 2. **エラーハンドリング**:
+
    - 不正な形式の行はスキップし、警告を出力
    - 必須要素（メッセージ、シグナル）のみ確実にパース
 

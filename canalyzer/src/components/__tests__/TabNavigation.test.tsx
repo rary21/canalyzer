@@ -6,34 +6,37 @@ import { DBCDatabase } from '@/types/dbc';
 
 // Next.jsのナビゲーションフックをモック
 jest.mock('next/navigation', () => ({
-  usePathname: jest.fn()
+  usePathname: jest.fn(),
 }));
 
 // DBCContextをモック
 jest.mock('@/contexts/DBCContext', () => ({
-  useDBCContext: jest.fn()
+  useDBCContext: jest.fn(),
 }));
 
 const mockUsePathname = usePathname as jest.MockedFunction<typeof usePathname>;
 import { useDBCContext } from '@/contexts/DBCContext';
-const mockUseDBCContext = useDBCContext as jest.MockedFunction<typeof useDBCContext>;
+const mockUseDBCContext = useDBCContext as jest.MockedFunction<
+  typeof useDBCContext
+>;
 
 // テスト用のモックDBCデータ
 const mockDBCData: DBCDatabase = {
   version: '1.0.0',
-  nodes: [
-    { name: 'TestECU', comment: 'テスト用ECU' }
-  ],
+  nodes: [{ name: 'TestECU', comment: 'テスト用ECU' }],
   messages: new Map([
-    [0x100, {
-      id: 0x100,
-      name: 'TestMessage',
-      length: 8,
-      sendingNode: 'TestECU',
-      signals: [],
-      comment: 'テストメッセージ'
-    }]
-  ])
+    [
+      0x100,
+      {
+        id: 0x100,
+        name: 'TestMessage',
+        length: 8,
+        sendingNode: 'TestECU',
+        signals: [],
+        comment: 'テストメッセージ',
+      },
+    ],
+  ]),
 };
 
 // DBCContextのプロバイダーをモック可能にするヘルパー
@@ -44,7 +47,7 @@ const renderWithDBCContext = (dbcData: DBCDatabase | null = null) => {
     parseResult: null,
     setParseResult: jest.fn(),
     fileName: null,
-    setFileName: jest.fn()
+    setFileName: jest.fn(),
   });
 
   return render(<TabNavigation />);
@@ -179,7 +182,7 @@ describe('TabNavigation', () => {
       renderWithDBCContext(null);
 
       const valuesTab = screen.getByText('CAN値表示').closest('a');
-      
+
       expect(valuesTab).toHaveAttribute('href', '/values');
       expect(valuesTab).toHaveClass('tab-active');
     });
@@ -240,7 +243,7 @@ describe('TabNavigation', () => {
       renderWithDBCContext();
 
       const valuesTab = screen.getByText('CAN値表示').closest('a');
-      
+
       expect(valuesTab).toHaveClass('hover:text-gray-700');
       expect(valuesTab).toHaveClass('hover:border-gray-300');
     });
@@ -250,7 +253,7 @@ describe('TabNavigation', () => {
       renderWithDBCContext();
 
       const infoTab = screen.getByText('DBC情報').closest('a');
-      
+
       // アクティブタブは固定の青色スタイルを持つ
       expect(infoTab).toHaveClass('text-blue-600');
       expect(infoTab).toHaveClass('border-blue-500');

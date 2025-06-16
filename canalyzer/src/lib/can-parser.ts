@@ -1,5 +1,12 @@
 import { DBCDatabase, CANSignal } from '@/types/dbc';
-import { CANFrame, CANValue, CANFrameAnalysis, CANDataSet, ParseConfig, BitField } from '@/types/can';
+import {
+  CANFrame,
+  CANValue,
+  CANFrameAnalysis,
+  CANDataSet,
+  ParseConfig,
+  BitField,
+} from '@/types/can';
 
 /**
  * CANデータパーサー
@@ -19,18 +26,18 @@ export class CANParser {
    */
   parseFrame(frame: CANFrame): CANFrameAnalysis {
     const message = this.database.messages.get(frame.id);
-    
+
     if (!message) {
       return {
         frame,
         messageName: 'Unknown',
         signals: [],
-        error: `CAN ID 0x${frame.id.toString(16).toUpperCase()}のメッセージ定義が見つかりません`
+        error: `CAN ID 0x${frame.id.toString(16).toUpperCase()}のメッセージ定義が見つかりません`,
       };
     }
 
     const signals: CANValue[] = [];
-    
+
     try {
       for (const signalDef of message.signals) {
         const value = this.extractSignalValue(frame, signalDef);
@@ -43,7 +50,7 @@ export class CANParser {
         frame,
         messageName: message.name,
         signals,
-        error: error instanceof Error ? error.message : 'シグナル解析エラー'
+        error: error instanceof Error ? error.message : 'シグナル解析エラー',
       };
     }
 
@@ -63,13 +70,22 @@ export class CANParser {
   parseDataSet(frames: CANFrame[], config: ParseConfig = {}): CANDataSet {
     // フィルタリング
     let filteredFrames = frames;
-    
-    if (config.timeRangeStart !== undefined || config.timeRangeEnd !== undefined) {
-      filteredFrames = filteredFrames.filter(frame => {
-        if (config.timeRangeStart !== undefined && frame.timestamp < config.timeRangeStart) {
+
+    if (
+      config.timeRangeStart !== undefined ||
+      config.timeRangeEnd !== undefined
+    ) {
+      filteredFrames = filteredFrames.filter((frame) => {
+        if (
+          config.timeRangeStart !== undefined &&
+          frame.timestamp < config.timeRangeStart
+        ) {
           return false;
         }
-        if (config.timeRangeEnd !== undefined && frame.timestamp > config.timeRangeEnd) {
+        if (
+          config.timeRangeEnd !== undefined &&
+          frame.timestamp > config.timeRangeEnd
+        ) {
           return false;
         }
         return true;
@@ -77,31 +93,32 @@ export class CANParser {
     }
 
     if (config.targetIds) {
-      filteredFrames = filteredFrames.filter(frame => 
+      filteredFrames = filteredFrames.filter((frame) =>
         config.targetIds!.includes(frame.id)
       );
     }
 
     // 解析実行
     const allValues: CANValue[] = [];
-    
+
     for (const frame of filteredFrames) {
       const analysis = this.parseFrame(frame);
-      
+
       if (!analysis.error) {
         let signals = analysis.signals;
-        
+
         // シグナルフィルター適用
         if (config.signalFilter && config.signalFilter.length > 0) {
-          signals = signals.filter(signal => 
+          signals = signals.filter((signal) =>
             config.signalFilter!.includes(signal.signalName)
           );
         }
 
         // 無効値除外
         if (config.excludeInvalidValues) {
-          signals = signals.filter(signal => 
-            !isNaN(signal.physicalValue) && isFinite(signal.physicalValue)
+          signals = signals.filter(
+            (signal) =>
+              !isNaN(signal.physicalValue) && isFinite(signal.physicalValue)
           );
         }
 
@@ -114,7 +131,7 @@ export class CANParser {
       createdAt: Date.now(),
       frames: filteredFrames,
       values: allValues,
-      description: `${filteredFrames.length}フレーム、${allValues.length}シグナル値を含むデータセット`
+      description: `${filteredFrames.length}フレーム、${allValues.length}シグナル値を含むデータセット`,
     };
   }
 
@@ -124,14 +141,17 @@ export class CANParser {
    * @param signal シグナル定義
    * @returns 抽出されたシグナル値
    */
-  private extractSignalValue(frame: CANFrame, signal: CANSignal): CANValue | null {
+  private extractSignalValue(
+    frame: CANFrame,
+    signal: CANSignal
+  ): CANValue | null {
     try {
       // ビットフィールド情報を構築
       const bitField: BitField = {
         startBit: signal.startBit,
         length: signal.length,
         endianness: signal.endianness,
-        signed: signal.signed
+        signed: signal.signed,
       };
 
       // 生の値を抽出
@@ -150,7 +170,7 @@ export class CANParser {
         physicalValue,
         unit: signal.unit,
         timestamp: frame.timestamp,
-        description
+        description,
       };
     } catch (error) {
       console.warn(`シグナル ${signal.name} の抽出に失敗:`, error);
@@ -170,7 +190,9 @@ export class CANParser {
     // データ長チェック
     const requiredBytes = Math.ceil((startBit + length) / 8);
     if (data.length < requiredBytes) {
-      throw new Error(`データ長が不足しています: 必要=${requiredBytes}バイト, 実際=${data.length}バイト`);
+      throw new Error(
+        `データ長が不足しています: 必要=${requiredBytes}バイト, 実際=${data.length}バイト`
+      );
     }
 
     let value = 0;
@@ -187,7 +209,7 @@ export class CANParser {
     if (signed && length < 32) {
       const signBit = 1 << (length - 1);
       if (value & signBit) {
-        value -= (1 << length);
+        value -= 1 << length;
       }
     }
 
@@ -197,38 +219,46 @@ export class CANParser {
   /**
    * リトルエンディアンでビット抽出
    */
-  private extractLittleEndian(data: Uint8Array, startBit: number, length: number): number {
+  private extractLittleEndian(
+    data: Uint8Array,
+    startBit: number,
+    length: number
+  ): number {
     let value = 0;
-    
+
     for (let i = 0; i < length; i++) {
       const bitPos = startBit + i;
       const byteIndex = Math.floor(bitPos / 8);
       const bitInByte = bitPos % 8;
-      
+
       if (data[byteIndex] & (1 << bitInByte)) {
-        value |= (1 << i);
+        value |= 1 << i;
       }
     }
-    
+
     return value;
   }
 
   /**
    * ビッグエンディアンでビット抽出
    */
-  private extractBigEndian(data: Uint8Array, startBit: number, length: number): number {
+  private extractBigEndian(
+    data: Uint8Array,
+    startBit: number,
+    length: number
+  ): number {
     let value = 0;
-    
+
     for (let i = 0; i < length; i++) {
       const bitPos = startBit + i;
       const byteIndex = Math.floor(bitPos / 8);
       const bitInByte = 7 - (bitPos % 8); // ビッグエンディアンはビット順が逆
-      
+
       if (data[byteIndex] & (1 << bitInByte)) {
-        value |= (1 << (length - 1 - i));
+        value |= 1 << (length - 1 - i);
       }
     }
-    
+
     return value;
   }
 
@@ -238,10 +268,13 @@ export class CANParser {
    * @param values シグナル値の配列
    * @returns 時系列データ（タイムスタンプと値のペア）
    */
-  getTimeSeriesData(signalName: string, values: CANValue[]): Array<{timestamp: number, value: number}> {
+  getTimeSeriesData(
+    signalName: string,
+    values: CANValue[]
+  ): Array<{ timestamp: number; value: number }> {
     return values
-      .filter(v => v.signalName === signalName)
-      .map(v => ({ timestamp: v.timestamp, value: v.physicalValue }))
+      .filter((v) => v.signalName === signalName)
+      .map((v) => ({ timestamp: v.timestamp, value: v.physicalValue }))
       .sort((a, b) => a.timestamp - b.timestamp);
   }
 
@@ -253,9 +286,9 @@ export class CANParser {
    */
   getSignalStatistics(signalName: string, values: CANValue[]) {
     const signalValues = values
-      .filter(v => v.signalName === signalName)
-      .map(v => v.physicalValue)
-      .filter(v => !isNaN(v) && isFinite(v));
+      .filter((v) => v.signalName === signalName)
+      .map((v) => v.physicalValue)
+      .filter((v) => !isNaN(v) && isFinite(v));
 
     if (signalValues.length === 0) {
       return null;
@@ -263,14 +296,15 @@ export class CANParser {
 
     const min = Math.min(...signalValues);
     const max = Math.max(...signalValues);
-    const avg = signalValues.reduce((sum, val) => sum + val, 0) / signalValues.length;
-    
+    const avg =
+      signalValues.reduce((sum, val) => sum + val, 0) / signalValues.length;
+
     return {
       count: signalValues.length,
       min,
       max,
       average: avg,
-      unit: values.find(v => v.signalName === signalName)?.unit || ''
+      unit: values.find((v) => v.signalName === signalName)?.unit || '',
     };
   }
 }

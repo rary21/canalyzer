@@ -1,54 +1,58 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import Link from 'next/link'
-import { DBCParser } from '@/lib/dbc-parser'
-import { ParseResult } from '@/types/dbc'
-import { useDBCContext } from '@/contexts/DBCContext'
+import { useState } from 'react';
+import Link from 'next/link';
+import { DBCParser } from '@/lib/dbc-parser';
+import { ParseResult } from '@/types/dbc';
+import { useDBCContext } from '@/contexts/DBCContext';
 
 export default function FileUpload() {
-  const [fileName, setFileName] = useState<string>('')
-  const [parseResult, setParseResult] = useState<ParseResult | null>(null)
-  const [loading, setLoading] = useState(false)
-  const { setDBCData, setParseResult: setContextParseResult, setFileName: setContextFileName } = useDBCContext()
+  const [fileName, setFileName] = useState<string>('');
+  const [parseResult, setParseResult] = useState<ParseResult | null>(null);
+  const [loading, setLoading] = useState(false);
+  const {
+    setDBCData,
+    setParseResult: setContextParseResult,
+    setFileName: setContextFileName,
+  } = useDBCContext();
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+    const file = e.target.files?.[0];
+    if (!file) return;
 
     // DBCファイルかチェック
     if (!file.name.toLowerCase().endsWith('.dbc')) {
-      alert('DBCファイルを選択してください')
-      return
+      alert('DBCファイルを選択してください');
+      return;
     }
 
-    setFileName(file.name)
-    setLoading(true)
+    setFileName(file.name);
+    setLoading(true);
 
     try {
       // ファイル内容を読み込む
-      const content = await file.text()
-      
+      const content = await file.text();
+
       // DBCファイルをパース
-      const parser = new DBCParser()
-      const result = parser.parse(content)
-      setParseResult(result)
-      setContextParseResult(result)
-      setContextFileName(file.name)
-      
+      const parser = new DBCParser();
+      const result = parser.parse(content);
+      setParseResult(result);
+      setContextParseResult(result);
+      setContextFileName(file.name);
+
       // パース成功時はDBCデータをコンテキストに保存
       if (result.success && result.database) {
-        setDBCData(result.database)
+        setDBCData(result.database);
       }
-      
-      console.log('パース結果:', result)
+
+      console.log('パース結果:', result);
     } catch (error) {
-      console.error('ファイル読み込みエラー:', error)
-      alert('ファイルの読み込みに失敗しました')
+      console.error('ファイル読み込みエラー:', error);
+      alert('ファイルの読み込みに失敗しました');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="w-full max-w-2xl">
@@ -71,13 +75,13 @@ export default function FileUpload() {
             disabled:opacity-50"
         />
       </label>
-      
+
       {loading && (
         <div className="mt-4 text-center">
           <p className="text-sm text-gray-600">読み込み中...</p>
         </div>
       )}
-      
+
       {parseResult && (
         <div className="mt-6 space-y-4">
           <div className="p-4 bg-gray-50 rounded-lg">
@@ -106,28 +110,31 @@ export default function FileUpload() {
                 <span className="font-medium">ノード数:</span>{' '}
                 {parseResult.database.nodes.length}
               </p>
-              
+
               {parseResult.database.messages.size > 0 && (
                 <div className="mt-3">
-                  <h4 className="text-sm font-medium mb-1">メッセージ一覧（最初の5件）:</h4>
+                  <h4 className="text-sm font-medium mb-1">
+                    メッセージ一覧（最初の5件）:
+                  </h4>
                   <ul className="text-xs space-y-1 mb-3">
                     {Array.from(parseResult.database.messages.values())
                       .slice(0, 5)
                       .map((msg) => (
                         <li key={msg.id} className="text-gray-600">
-                          ID: {msg.id} - {msg.name} ({msg.signals.length} シグナル)
+                          ID: {msg.id} - {msg.name} ({msg.signals.length}{' '}
+                          シグナル)
                         </li>
                       ))}
                   </ul>
-                  
+
                   <div className="flex space-x-2">
-                    <Link 
+                    <Link
                       href="/info"
                       className="inline-flex items-center px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors"
                     >
                       DBC情報を表示 →
                     </Link>
-                    <Link 
+                    <Link
                       href="/values"
                       className="inline-flex items-center px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition-colors"
                     >
@@ -154,5 +161,5 @@ export default function FileUpload() {
         </div>
       )}
     </div>
-  )
+  );
 }

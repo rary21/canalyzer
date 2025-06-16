@@ -20,7 +20,11 @@ export interface WebSocketResponseData {
 }
 
 // WebSocket接続の状態
-export type WebSocketStatus = 'connecting' | 'connected' | 'disconnected' | 'error';
+export type WebSocketStatus =
+  | 'connecting'
+  | 'connected'
+  | 'disconnected'
+  | 'error';
 
 // WebSocketフックの設定
 export interface WebSocketConfig {
@@ -35,11 +39,11 @@ export interface WebSocketHookReturn {
   // 接続状態
   status: WebSocketStatus;
   isConnected: boolean;
-  
+
   // データ
   lastFrame: CANFrame | null;
   frames: CANFrame[];
-  
+
   // 制御関数
   connect: () => void;
   disconnect: () => void;
@@ -47,7 +51,7 @@ export interface WebSocketHookReturn {
   stopStreaming: () => void;
   subscribe: (messageIds: number[]) => void;
   unsubscribe: (messageIds: number[]) => void;
-  
+
   // 統計情報
   stats: {
     framesReceived: number;
@@ -63,17 +67,17 @@ export interface RealtimeDataContextType {
   isConnected: boolean;
   isStreaming: boolean;
   status: WebSocketStatus;
-  
+
   // データ
   currentData: Map<number, CANFrame>;
   historicalData: Map<number, CANFrame[]>;
-  
+
   // 制御関数
   startRealtime: () => void;
   stopRealtime: () => void;
   subscribe: (messageIds: number[]) => void;
   unsubscribe: (messageIds: number[]) => void;
-  
+
   // 統計情報
   stats: RealtimeStats;
 }

@@ -5,14 +5,14 @@ import {
   DBCDatabase,
   ParseResult,
   ParseError,
-  ParseWarning
+  ParseWarning,
 } from '../dbc';
 
 describe('DBC型定義', () => {
   describe('CANNode', () => {
     it('必要なプロパティを持つ', () => {
       const node: CANNode = {
-        name: 'ECU1'
+        name: 'ECU1',
       };
 
       expect(node.name).toBe('ECU1');
@@ -22,7 +22,7 @@ describe('DBC型定義', () => {
     it('オプショナルなコメントを持てる', () => {
       const node: CANNode = {
         name: 'ECU1',
-        comment: 'Engine Control Unit'
+        comment: 'Engine Control Unit',
       };
 
       expect(node.comment).toBe('Engine Control Unit');
@@ -42,7 +42,7 @@ describe('DBC型定義', () => {
         min: 0,
         max: 16383.75,
         unit: 'rpm',
-        receivingNodes: ['ECU2', 'Display']
+        receivingNodes: ['ECU2', 'Display'],
       };
 
       expect(signal.name).toBe('EngineSpeed');
@@ -65,7 +65,7 @@ describe('DBC型定義', () => {
         unit: '',
         receivingNodes: [],
         values: { 0: 'Park', 1: 'Reverse', 2: 'Neutral' },
-        comment: 'Current gear position'
+        comment: 'Current gear position',
       };
 
       expect(signal.values).toBeDefined();
@@ -81,7 +81,7 @@ describe('DBC型定義', () => {
         name: 'EngineData',
         length: 8,
         sendingNode: 'ECU1',
-        signals: []
+        signals: [],
       };
 
       expect(message.id).toBe(100);
@@ -96,7 +96,7 @@ describe('DBC型定義', () => {
       const database: DBCDatabase = {
         version: '1.0',
         nodes: [],
-        messages: new Map()
+        messages: new Map(),
       };
 
       expect(database.version).toBe('1.0');
@@ -109,7 +109,7 @@ describe('DBC型定義', () => {
         version: '',
         nodes: [],
         messages: new Map(),
-        baudrate: 500000
+        baudrate: 500000,
       };
 
       expect(database.baudrate).toBe(500000);
@@ -121,7 +121,7 @@ describe('DBC型定義', () => {
       const error: ParseError = {
         line: 10,
         message: 'Syntax error',
-        type: 'SYNTAX_ERROR'
+        type: 'SYNTAX_ERROR',
       };
 
       expect(error.line).toBe(10);
@@ -130,9 +130,21 @@ describe('DBC型定義', () => {
     });
 
     it('すべてのエラータイプをサポートする', () => {
-      const syntaxError: ParseError = { line: 1, message: '', type: 'SYNTAX_ERROR' };
-      const invalidValue: ParseError = { line: 1, message: '', type: 'INVALID_VALUE' };
-      const missingRequired: ParseError = { line: 1, message: '', type: 'MISSING_REQUIRED' };
+      const syntaxError: ParseError = {
+        line: 1,
+        message: '',
+        type: 'SYNTAX_ERROR',
+      };
+      const invalidValue: ParseError = {
+        line: 1,
+        message: '',
+        type: 'INVALID_VALUE',
+      };
+      const missingRequired: ParseError = {
+        line: 1,
+        message: '',
+        type: 'MISSING_REQUIRED',
+      };
 
       expect(syntaxError.type).toBe('SYNTAX_ERROR');
       expect(invalidValue.type).toBe('INVALID_VALUE');
@@ -145,7 +157,7 @@ describe('DBC型定義', () => {
       const warning: ParseWarning = {
         line: 5,
         message: 'Unknown keyword',
-        type: 'UNKNOWN_KEYWORD'
+        type: 'UNKNOWN_KEYWORD',
       };
 
       expect(warning.line).toBe(5);
@@ -161,10 +173,10 @@ describe('DBC型定義', () => {
         database: {
           version: '',
           nodes: [],
-          messages: new Map()
+          messages: new Map(),
         },
         errors: [],
-        warnings: []
+        warnings: [],
       };
 
       expect(result.success).toBe(true);
@@ -176,7 +188,7 @@ describe('DBC型定義', () => {
       const result: ParseResult = {
         success: false,
         errors: [{ line: 1, message: 'Error', type: 'SYNTAX_ERROR' }],
-        warnings: []
+        warnings: [],
       };
 
       expect(result.success).toBe(false);

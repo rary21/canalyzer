@@ -13,7 +13,7 @@ const handle = app.getRequestHandler();
 app.prepare().then(() => {
   // WebSocketサーバーをインポート
   const { setupWebSocketServer } = require('./src/server/websocket-server.js');
-  
+
   const server = createServer(async (req, res) => {
     try {
       const parsedUrl = parse(req.url, true);

@@ -47,10 +47,10 @@ export class VirtualCANInterface implements ICANInterface {
 
   async start(): Promise<void> {
     if (this.isRunning) return;
-    
+
     this.isRunning = true;
     console.log('Virtual CAN interface started');
-    
+
     // 100msごとに仮想CANデータを生成
     this.intervalId = setInterval(() => {
       this.generateVirtualFrames();
@@ -59,7 +59,7 @@ export class VirtualCANInterface implements ICANInterface {
 
   async stop(): Promise<void> {
     if (!this.isRunning) return;
-    
+
     this.isRunning = false;
     if (this.intervalId) {
       clearInterval(this.intervalId);
@@ -87,63 +87,75 @@ export class VirtualCANInterface implements ICANInterface {
   private generateVirtualFrames(): void {
     const timestamp = Date.now();
     const time = timestamp / 1000;
-    
+
     // エンジンステータスメッセージ (ID: 0x100)
     const engineFrame: CANFrame = {
       id: 0x100,
       data: new Uint8Array([
         // RPM: 800-6000 (変動)
-        Math.floor(800 + Math.sin(time * 0.5) * 2600 + Math.random() * 100) & 0xFF,
-        (Math.floor(800 + Math.sin(time * 0.5) * 2600 + Math.random() * 100) >> 8) & 0xFF,
+        Math.floor(800 + Math.sin(time * 0.5) * 2600 + Math.random() * 100) &
+          0xff,
+        (Math.floor(800 + Math.sin(time * 0.5) * 2600 + Math.random() * 100) >>
+          8) &
+          0xff,
         // 温度: 20-90°C (徐々に上昇)
-        Math.min(90, 20 + time * 0.1) & 0xFF,
+        Math.min(90, 20 + time * 0.1) & 0xff,
         // 燃料レベル: 0-100% (徐々に減少)
-        Math.max(0, 100 - time * 0.05) & 0xFF,
-        0, 0, 0, 0
+        Math.max(0, 100 - time * 0.05) & 0xff,
+        0,
+        0,
+        0,
+        0,
       ]),
       timestamp,
       extended: false,
-      dlc: 8
+      dlc: 8,
     };
-    
+
     // 車両動作メッセージ (ID: 0x200)
     const motionFrame: CANFrame = {
       id: 0x200,
       data: new Uint8Array([
         // 速度: 0-200 km/h (変動)
-        Math.floor(Math.max(0, Math.sin(time * 0.3) * 100 + 50)) & 0xFF,
-        (Math.floor(Math.max(0, Math.sin(time * 0.3) * 100 + 50)) >> 8) & 0xFF,
+        Math.floor(Math.max(0, Math.sin(time * 0.3) * 100 + 50)) & 0xff,
+        (Math.floor(Math.max(0, Math.sin(time * 0.3) * 100 + 50)) >> 8) & 0xff,
         // アクセル: 0-100%
-        Math.floor(Math.max(0, Math.sin(time * 0.3) * 50 + 50)) & 0xFF,
+        Math.floor(Math.max(0, Math.sin(time * 0.3) * 50 + 50)) & 0xff,
         // ブレーキ: 0-100%
-        Math.floor(Math.max(0, -Math.sin(time * 0.3) * 50 + 10)) & 0xFF,
+        Math.floor(Math.max(0, -Math.sin(time * 0.3) * 50 + 10)) & 0xff,
         // ステアリング角度: -720 to +720
-        Math.floor(Math.sin(time * 0.2) * 360) & 0xFF,
-        (Math.floor(Math.sin(time * 0.2) * 360) >> 8) & 0xFF,
-        0, 0
+        Math.floor(Math.sin(time * 0.2) * 360) & 0xff,
+        (Math.floor(Math.sin(time * 0.2) * 360) >> 8) & 0xff,
+        0,
+        0,
       ]),
       timestamp,
       extended: false,
-      dlc: 8
+      dlc: 8,
     };
-    
+
     // ボディステータスメッセージ (ID: 0x300)
     const bodyFrame: CANFrame = {
       id: 0x300,
       data: new Uint8Array([
         // ドア状態とライト状態（ランダムに変化）
-        Math.random() > 0.95 ? 0xFF : 0x00,
+        Math.random() > 0.95 ? 0xff : 0x00,
         // バッテリー電圧: 11.5-14.5V
-        Math.floor((11.5 + Math.random() * 3) * 10) & 0xFF,
-        0, 0, 0, 0, 0, 0
+        Math.floor((11.5 + Math.random() * 3) * 10) & 0xff,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
       ]),
       timestamp,
       extended: false,
-      dlc: 8
+      dlc: 8,
     };
-    
+
     // フレームをリスナーに通知
-    this.frameListeners.forEach(listener => {
+    this.frameListeners.forEach((listener) => {
       listener(engineFrame);
       listener(motionFrame);
       listener(bodyFrame);

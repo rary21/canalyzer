@@ -12,7 +12,7 @@ describe('CANValuesDisplay', () => {
       physicalValue: 200.0,
       unit: 'rpm',
       timestamp: 1000,
-      description: 'エンジン回転数'
+      description: 'エンジン回転数',
     },
     {
       signalName: 'Vehicle_Speed',
@@ -20,7 +20,7 @@ describe('CANValuesDisplay', () => {
       rawValue: 1000,
       physicalValue: 10.0,
       unit: 'km/h',
-      timestamp: 2000
+      timestamp: 2000,
     },
     {
       signalName: 'Engine_Temp',
@@ -29,7 +29,7 @@ describe('CANValuesDisplay', () => {
       physicalValue: 40.0,
       unit: '°C',
       timestamp: 3000,
-      description: '冷却水温度'
+      description: '冷却水温度',
     },
     {
       signalName: 'Brake_Pedal',
@@ -38,8 +38,8 @@ describe('CANValuesDisplay', () => {
       physicalValue: 1,
       unit: '',
       timestamp: 4000,
-      description: 'Pressed'
-    }
+      description: 'Pressed',
+    },
   ];
 
   describe('レンダリング', () => {
@@ -48,7 +48,7 @@ describe('CANValuesDisplay', () => {
 
       expect(screen.getByText('CAN信号値')).toBeInTheDocument();
       expect(screen.getByText('4 / 4 件のシグナル値')).toBeInTheDocument();
-      
+
       // テーブルヘッダーの確認
       expect(screen.getByText('シグナル名')).toBeInTheDocument();
       expect(screen.getByText('物理値')).toBeInTheDocument();
@@ -68,7 +68,11 @@ describe('CANValuesDisplay', () => {
       render(<CANValuesDisplay values={[]} />);
 
       expect(screen.getByText('CANデータがありません')).toBeInTheDocument();
-      expect(screen.getByText('サンプルデータを読み込むか、CANフレームをパースしてください')).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          'サンプルデータを読み込むか、CANフレームをパースしてください'
+        )
+      ).toBeInTheDocument();
     });
 
     it('ローディング状態で正しくレンダリングされる', () => {
@@ -84,7 +88,9 @@ describe('CANValuesDisplay', () => {
     it('シグナル名で検索できる', async () => {
       render(<CANValuesDisplay values={mockValues} />);
 
-      const searchInput = screen.getByPlaceholderText('シグナル名、メッセージ名、単位、説明で検索...');
+      const searchInput = screen.getByPlaceholderText(
+        'シグナル名、メッセージ名、単位、説明で検索...'
+      );
       fireEvent.change(searchInput, { target: { value: 'Engine' } });
 
       await waitFor(() => {
@@ -99,7 +105,9 @@ describe('CANValuesDisplay', () => {
     it('単位で検索できる', async () => {
       render(<CANValuesDisplay values={mockValues} />);
 
-      const searchInput = screen.getByPlaceholderText('シグナル名、メッセージ名、単位、説明で検索...');
+      const searchInput = screen.getByPlaceholderText(
+        'シグナル名、メッセージ名、単位、説明で検索...'
+      );
       fireEvent.change(searchInput, { target: { value: 'rpm' } });
 
       await waitFor(() => {
@@ -113,7 +121,9 @@ describe('CANValuesDisplay', () => {
     it('説明で検索できる', async () => {
       render(<CANValuesDisplay values={mockValues} />);
 
-      const searchInput = screen.getByPlaceholderText('シグナル名、メッセージ名、単位、説明で検索...');
+      const searchInput = screen.getByPlaceholderText(
+        'シグナル名、メッセージ名、単位、説明で検索...'
+      );
       fireEvent.change(searchInput, { target: { value: '冷却水' } });
 
       await waitFor(() => {
@@ -127,7 +137,9 @@ describe('CANValuesDisplay', () => {
     it('大文字小文字を区別しない検索', async () => {
       render(<CANValuesDisplay values={mockValues} />);
 
-      const searchInput = screen.getByPlaceholderText('シグナル名、メッセージ名、単位、説明で検索...');
+      const searchInput = screen.getByPlaceholderText(
+        'シグナル名、メッセージ名、単位、説明で検索...'
+      );
       fireEvent.change(searchInput, { target: { value: 'engine' } });
 
       await waitFor(() => {
@@ -141,7 +153,9 @@ describe('CANValuesDisplay', () => {
     it('検索結果がない場合の表示', async () => {
       render(<CANValuesDisplay values={mockValues} />);
 
-      const searchInput = screen.getByPlaceholderText('シグナル名、メッセージ名、単位、説明で検索...');
+      const searchInput = screen.getByPlaceholderText(
+        'シグナル名、メッセージ名、単位、説明で検索...'
+      );
       fireEvent.change(searchInput, { target: { value: 'NonExistent' } });
 
       await waitFor(() => {
@@ -197,7 +211,7 @@ describe('CANValuesDisplay', () => {
       render(<CANValuesDisplay values={mockValues} />);
 
       const signalNameHeader = screen.getByText('シグナル名').closest('th');
-      
+
       // 最初のクリック（昇順）
       fireEvent.click(signalNameHeader!);
       await waitFor(() => {
@@ -219,7 +233,7 @@ describe('CANValuesDisplay', () => {
       // 初期状態ではタイムスタンプ降順ソート
       const timestampHeader = screen.getByText('タイムスタンプ').closest('th');
       expect(timestampHeader).toBeInTheDocument();
-      
+
       // ソートアイコンが存在することを確認（SVG要素）
       const sortIcons = timestampHeader!.querySelectorAll('svg');
       expect(sortIcons.length).toBeGreaterThan(0);
@@ -234,7 +248,7 @@ describe('CANValuesDisplay', () => {
       rawValue: i,
       physicalValue: i * 0.1,
       unit: 'unit',
-      timestamp: 1000 + i * 100
+      timestamp: 1000 + i * 100,
     }));
 
     it('50件を超える場合にページネーションが表示される', () => {
@@ -307,7 +321,9 @@ describe('CANValuesDisplay', () => {
       });
 
       // 検索を実行
-      const searchInput = screen.getByPlaceholderText('シグナル名、メッセージ名、単位、説明で検索...');
+      const searchInput = screen.getByPlaceholderText(
+        'シグナル名、メッセージ名、単位、説明で検索...'
+      );
       fireEvent.change(searchInput, { target: { value: 'Signal_1' } });
 
       await waitFor(() => {
@@ -325,7 +341,7 @@ describe('CANValuesDisplay', () => {
         rawValue: 100,
         physicalValue: 10.0,
         unit: 'unit',
-        timestamp: new Date('2023-12-25T10:30:45.123Z').getTime()
+        timestamp: new Date('2023-12-25T10:30:45.123Z').getTime(),
       };
 
       render(<CANValuesDisplay values={[testValue]} />);
@@ -342,7 +358,7 @@ describe('CANValuesDisplay', () => {
           rawValue: 100,
           physicalValue: 100,
           unit: 'count',
-          timestamp: 1000
+          timestamp: 1000,
         },
         {
           signalName: 'DecimalValue',
@@ -350,8 +366,8 @@ describe('CANValuesDisplay', () => {
           rawValue: 1234,
           physicalValue: 12.345,
           unit: 'value',
-          timestamp: 2000
-        }
+          timestamp: 2000,
+        },
       ];
 
       render(<CANValuesDisplay values={testValues} />);
@@ -359,11 +375,11 @@ describe('CANValuesDisplay', () => {
       // 整数値と小数値の表示を確認
       expect(screen.getByText('IntegerValue')).toBeInTheDocument();
       expect(screen.getByText('DecimalValue')).toBeInTheDocument();
-      
+
       // 物理値が適切にフォーマットされているかより詳細に確認
       const integerRow = screen.getByText('IntegerValue').closest('tr');
       const decimalRow = screen.getByText('DecimalValue').closest('tr');
-      
+
       expect(integerRow?.textContent).toContain('100'); // 整数値
       expect(decimalRow?.textContent).toContain('12.345'); // 小数値（3桁まで）
     });
@@ -375,7 +391,7 @@ describe('CANValuesDisplay', () => {
         rawValue: 1,
         physicalValue: 1,
         unit: '',
-        timestamp: 1000
+        timestamp: 1000,
       };
 
       render(<CANValuesDisplay values={[testValue]} />);
@@ -391,7 +407,7 @@ describe('CANValuesDisplay', () => {
         rawValue: 1,
         physicalValue: 1,
         unit: 'unit',
-        timestamp: 1000
+        timestamp: 1000,
       };
 
       render(<CANValuesDisplay values={[testValue]} />);
@@ -409,7 +425,7 @@ describe('CANValuesDisplay', () => {
         rawValue: i,
         physicalValue: i * 0.1,
         unit: 'unit',
-        timestamp: 1000 + i * 100
+        timestamp: 1000 + i * 100,
       }));
 
       render(<CANValuesDisplay values={manyValues} />);

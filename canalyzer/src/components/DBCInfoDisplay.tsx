@@ -1,23 +1,25 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { DBCDatabase } from '@/types/dbc'
-import DBCOverview from './DBCOverview'
-import NodesList from './NodesList'
-import MessagesList from './MessagesList'
+import { useState } from 'react';
+import { DBCDatabase } from '@/types/dbc';
+import DBCOverview from './DBCOverview';
+import NodesList from './NodesList';
+import MessagesList from './MessagesList';
 
 interface DBCInfoDisplayProps {
-  data: DBCDatabase
+  data: DBCDatabase;
 }
 
 export default function DBCInfoDisplay({ data }: DBCInfoDisplayProps) {
-  const [activeTab, setActiveTab] = useState<'overview' | 'nodes' | 'messages'>('overview')
+  const [activeTab, setActiveTab] = useState<'overview' | 'nodes' | 'messages'>(
+    'overview'
+  );
 
   const tabs = [
     { id: 'overview' as const, label: '概要', count: null },
     { id: 'nodes' as const, label: 'ノード', count: data.nodes.length },
     { id: 'messages' as const, label: 'メッセージ', count: data.messages.size },
-  ]
+  ];
 
   return (
     <div className="bg-white rounded-lg shadow-lg">
@@ -36,11 +38,13 @@ export default function DBCInfoDisplay({ data }: DBCInfoDisplayProps) {
             >
               {tab.label}
               {tab.count !== null && (
-                <span className={`ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                  activeTab === tab.id
-                    ? 'bg-blue-100 text-blue-800'
-                    : 'bg-gray-100 text-gray-800'
-                }`}>
+                <span
+                  className={`ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    activeTab === tab.id
+                      ? 'bg-blue-100 text-blue-800'
+                      : 'bg-gray-100 text-gray-800'
+                  }`}
+                >
                   {tab.count}
                 </span>
               )}
@@ -56,5 +60,5 @@ export default function DBCInfoDisplay({ data }: DBCInfoDisplayProps) {
         {activeTab === 'messages' && <MessagesList messages={data.messages} />}
       </div>
     </div>
-  )
+  );
 }

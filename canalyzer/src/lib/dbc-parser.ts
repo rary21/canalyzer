@@ -1,5 +1,13 @@
 import { Dbc } from '@montra-connect/dbc-parser';
-import { DBCDatabase, CANMessage, CANSignal, CANNode, ParseResult, ParseError, ParseWarning } from '@/types/dbc';
+import {
+  DBCDatabase,
+  CANMessage,
+  CANSignal,
+  CANNode,
+  ParseResult,
+  ParseError,
+  ParseWarning,
+} from '@/types/dbc';
 
 export class DBCParser {
   private dbc: Dbc;
@@ -17,12 +25,12 @@ export class DBCParser {
       errors.push({
         line: 0,
         message: '入力が無効です',
-        type: 'SYNTAX_ERROR'
+        type: 'SYNTAX_ERROR',
       });
       return {
         success: false,
         errors,
-        warnings
+        warnings,
       };
     }
 
@@ -41,37 +49,40 @@ export class DBCParser {
         success: true,
         database,
         errors,
-        warnings
+        warnings,
       };
     } catch (error) {
       errors.push({
         line: 0,
-        message: error instanceof Error ? error.message : 'DBCファイルのパースに失敗しました',
-        type: 'SYNTAX_ERROR'
+        message:
+          error instanceof Error
+            ? error.message
+            : 'DBCファイルのパースに失敗しました',
+        type: 'SYNTAX_ERROR',
       });
 
       return {
         success: false,
         errors,
-        warnings
+        warnings,
       };
     }
   }
 
   private extractNodes(dbcData: unknown): CANNode[] {
     const nodes: CANNode[] = [];
-    
+
     // 型ガード
     if (!this.isDbcData(dbcData)) {
       return nodes;
     }
-    
+
     // dbcDataからノード情報を抽出
     if (Array.isArray(dbcData.nodes)) {
       for (const nodeName of dbcData.nodes) {
         nodes.push({
           name: nodeName,
-          comment: undefined
+          comment: undefined,
         });
       }
     }
@@ -97,7 +108,7 @@ export class DBCParser {
         if (messageData.signals && messageData.signals instanceof Map) {
           for (const [signalName, dbcSignal] of messageData.signals) {
             const signalData = dbcSignal as DbcSignal;
-            
+
             // 値テーブルをオブジェクトに変換
             let values: Record<number, string> | undefined;
             if (signalData.valueTable && signalData.valueTable instanceof Map) {
@@ -120,7 +131,7 @@ export class DBCParser {
               unit: signalData.unit || '',
               receivingNodes: signalData.receivingNodes || [],
               values,
-              comment: signalData.description || undefined
+              comment: signalData.description || undefined,
             });
           }
         }
@@ -131,7 +142,7 @@ export class DBCParser {
           length: messageData.dlc,
           sendingNode: messageData.sendingNode || '',
           signals,
-          comment: messageData.description || undefined
+          comment: messageData.description || undefined,
         });
       }
     }

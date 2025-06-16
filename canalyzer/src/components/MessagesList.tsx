@@ -1,77 +1,80 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { CANMessage } from '@/types/dbc'
-import MessageDetail from './MessageDetail'
+import { useState } from 'react';
+import { CANMessage } from '@/types/dbc';
+import MessageDetail from './MessageDetail';
 
 interface MessagesListProps {
-  messages: Map<number, CANMessage>
+  messages: Map<number, CANMessage>;
 }
 
 export default function MessagesList({ messages }: MessagesListProps) {
-  const [searchTerm, setSearchTerm] = useState('')
-  const [selectedMessage, setSelectedMessage] = useState<CANMessage | null>(null)
-  const [sortBy, setSortBy] = useState<'id' | 'name' | 'signals'>('id')
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedMessage, setSelectedMessage] = useState<CANMessage | null>(
+    null
+  );
+  const [sortBy, setSortBy] = useState<'id' | 'name' | 'signals'>('id');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
-  const messagesArray = Array.from(messages.values())
+  const messagesArray = Array.from(messages.values());
 
   // 検索フィルタリング
-  const filteredMessages = messagesArray.filter(message =>
-    message.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    message.id.toString().includes(searchTerm) ||
-    message.sendingNode.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  const filteredMessages = messagesArray.filter(
+    (message) =>
+      message.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      message.id.toString().includes(searchTerm) ||
+      message.sendingNode.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   // ソート
   const sortedMessages = [...filteredMessages].sort((a, b) => {
-    let aValue: string | number
-    let bValue: string | number
+    let aValue: string | number;
+    let bValue: string | number;
 
     switch (sortBy) {
       case 'id':
-        aValue = a.id
-        bValue = b.id
-        break
+        aValue = a.id;
+        bValue = b.id;
+        break;
       case 'name':
-        aValue = a.name.toLowerCase()
-        bValue = b.name.toLowerCase()
-        break
+        aValue = a.name.toLowerCase();
+        bValue = b.name.toLowerCase();
+        break;
       case 'signals':
-        aValue = a.signals.length
-        bValue = b.signals.length
-        break
+        aValue = a.signals.length;
+        bValue = b.signals.length;
+        break;
       default:
-        return 0
+        return 0;
     }
 
     if (sortOrder === 'asc') {
-      return aValue < bValue ? -1 : aValue > bValue ? 1 : 0
+      return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
     } else {
-      return aValue > bValue ? -1 : aValue < bValue ? 1 : 0
+      return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
     }
-  })
+  });
 
   const handleSort = (field: 'id' | 'name' | 'signals') => {
     if (sortBy === field) {
-      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
     } else {
-      setSortBy(field)
-      setSortOrder('asc')
+      setSortBy(field);
+      setSortOrder('asc');
     }
-  }
+  };
 
   const getSortIcon = (field: 'id' | 'name' | 'signals') => {
-    if (sortBy !== field) return '↕️'
-    return sortOrder === 'asc' ? '↑' : '↓'
-  }
+    if (sortBy !== field) return '↕️';
+    return sortOrder === 'asc' ? '↑' : '↓';
+  };
 
   if (messagesArray.length === 0) {
     return (
       <div className="text-center py-8">
         <p className="text-gray-500">メッセージが定義されていません</p>
       </div>
-    )
+    );
   }
 
   return (
@@ -88,7 +91,9 @@ export default function MessagesList({ messages }: MessagesListProps) {
           />
         </div>
         <div className="flex items-center gap-2 text-sm text-gray-500">
-          <span>表示中: {sortedMessages.length} / {messagesArray.length} 件</span>
+          <span>
+            表示中: {sortedMessages.length} / {messagesArray.length} 件
+          </span>
         </div>
       </div>
 
@@ -97,13 +102,13 @@ export default function MessagesList({ messages }: MessagesListProps) {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th 
+              <th
                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                 onClick={() => handleSort('id')}
               >
                 ID {getSortIcon('id')}
               </th>
-              <th 
+              <th
                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                 onClick={() => handleSort('name')}
               >
@@ -115,7 +120,7 @@ export default function MessagesList({ messages }: MessagesListProps) {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 送信ノード
               </th>
-              <th 
+              <th
                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                 onClick={() => handleSort('signals')}
               >
@@ -128,7 +133,10 @@ export default function MessagesList({ messages }: MessagesListProps) {
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {sortedMessages.map((message, index) => (
-              <tr key={message.id} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+              <tr
+                key={message.id}
+                className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
+              >
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900">
                   0x{message.id.toString(16).toUpperCase().padStart(3, '0')}
                   <span className="text-gray-500 ml-2">({message.id})</span>
@@ -167,5 +175,5 @@ export default function MessagesList({ messages }: MessagesListProps) {
         />
       )}
     </div>
-  )
+  );
 }

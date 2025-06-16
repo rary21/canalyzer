@@ -1,13 +1,16 @@
-'use client'
+'use client';
 
-import { CANMessage } from '@/types/dbc'
+import { CANMessage } from '@/types/dbc';
 
 interface MessageDetailProps {
-  message: CANMessage
-  onClose: () => void
+  message: CANMessage;
+  onClose: () => void;
 }
 
-export default function MessageDetail({ message, onClose }: MessageDetailProps) {
+export default function MessageDetail({
+  message,
+  onClose,
+}: MessageDetailProps) {
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
       <div className="relative top-20 mx-auto p-5 border w-11/12 max-w-4xl shadow-lg rounded-md bg-white">
@@ -18,7 +21,8 @@ export default function MessageDetail({ message, onClose }: MessageDetailProps) 
               メッセージ詳細: {message.name}
             </h3>
             <p className="text-sm text-gray-500">
-              ID: 0x{message.id.toString(16).toUpperCase().padStart(3, '0')} ({message.id})
+              ID: 0x{message.id.toString(16).toUpperCase().padStart(3, '0')} (
+              {message.id})
             </p>
           </div>
           <button
@@ -38,17 +42,25 @@ export default function MessageDetail({ message, onClose }: MessageDetailProps) 
               <p className="text-lg text-gray-900">{message.length} バイト</p>
             </div>
             <div>
-              <span className="text-sm font-medium text-gray-500">送信ノード</span>
-              <p className="text-lg text-gray-900">{message.sendingNode || '未指定'}</p>
+              <span className="text-sm font-medium text-gray-500">
+                送信ノード
+              </span>
+              <p className="text-lg text-gray-900">
+                {message.sendingNode || '未指定'}
+              </p>
             </div>
             <div>
-              <span className="text-sm font-medium text-gray-500">シグナル数</span>
+              <span className="text-sm font-medium text-gray-500">
+                シグナル数
+              </span>
               <p className="text-lg text-gray-900">{message.signals.length}</p>
             </div>
           </div>
           {message.comment && (
             <div className="mt-3">
-              <span className="text-sm font-medium text-gray-500">コメント</span>
+              <span className="text-sm font-medium text-gray-500">
+                コメント
+              </span>
               <p className="text-gray-700 mt-1">{message.comment}</p>
             </div>
           )}
@@ -95,7 +107,10 @@ export default function MessageDetail({ message, onClose }: MessageDetailProps) 
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {message.signals.map((signal, index) => (
-                    <tr key={signal.name} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                    <tr
+                      key={signal.name}
+                      className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
+                    >
                       <td className="px-4 py-3 text-sm font-medium text-gray-900">
                         {signal.name}
                       </td>
@@ -129,27 +144,41 @@ export default function MessageDetail({ message, onClose }: MessageDetailProps) 
               </table>
             </div>
           ) : (
-            <p className="text-gray-500 text-center py-4">シグナルが定義されていません</p>
+            <p className="text-gray-500 text-center py-4">
+              シグナルが定義されていません
+            </p>
           )}
         </div>
 
         {/* シグナルの値定義がある場合 */}
-        {message.signals.some(signal => signal.values) && (
+        {message.signals.some((signal) => signal.values) && (
           <div className="mb-6">
             <h4 className="text-md font-medium text-gray-900 mb-3">値定義</h4>
             <div className="space-y-4">
               {message.signals
-                .filter(signal => signal.values)
-                .map(signal => (
-                  <div key={signal.name} className="border border-gray-200 rounded-lg p-4">
-                    <h5 className="font-medium text-gray-900 mb-2">{signal.name}</h5>
+                .filter((signal) => signal.values)
+                .map((signal) => (
+                  <div
+                    key={signal.name}
+                    className="border border-gray-200 rounded-lg p-4"
+                  >
+                    <h5 className="font-medium text-gray-900 mb-2">
+                      {signal.name}
+                    </h5>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
-                      {signal.values && Object.entries(signal.values).map(([value, description]) => (
-                        <div key={value} className="bg-gray-50 p-2 rounded">
-                          <span className="font-mono text-gray-600">{value}:</span>
-                          <span className="ml-1 text-gray-900">{description}</span>
-                        </div>
-                      ))}
+                      {signal.values &&
+                        Object.entries(signal.values).map(
+                          ([value, description]) => (
+                            <div key={value} className="bg-gray-50 p-2 rounded">
+                              <span className="font-mono text-gray-600">
+                                {value}:
+                              </span>
+                              <span className="ml-1 text-gray-900">
+                                {description}
+                              </span>
+                            </div>
+                          )
+                        )}
                     </div>
                   </div>
                 ))}
@@ -168,5 +197,5 @@ export default function MessageDetail({ message, onClose }: MessageDetailProps) 
         </div>
       </div>
     </div>
-  )
+  );
 }

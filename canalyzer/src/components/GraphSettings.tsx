@@ -1,35 +1,35 @@
-'use client'
+'use client';
 
-import React, { useState } from 'react'
-import { 
-  GraphConfig, 
-  TIME_RANGE_PRESETS, 
-  UPDATE_INTERVAL_PRESETS 
-} from '@/types/graph'
+import React, { useState } from 'react';
+import {
+  GraphConfig,
+  TIME_RANGE_PRESETS,
+  UPDATE_INTERVAL_PRESETS,
+} from '@/types/graph';
 
 interface GraphSettingsProps {
   /** 現在のグラフ設定 */
-  config: GraphConfig
+  config: GraphConfig;
   /** 設定変更時のコールバック */
-  onConfigChange: (config: GraphConfig) => void
+  onConfigChange: (config: GraphConfig) => void;
   /** リアルタイム更新の有効状態 */
-  realTimeEnabled: boolean
+  realTimeEnabled: boolean;
   /** リアルタイム更新切り替えのコールバック */
-  onRealTimeToggle: (enabled: boolean) => void
+  onRealTimeToggle: (enabled: boolean) => void;
 }
 
 export default function GraphSettings({
   config,
   onConfigChange,
   realTimeEnabled,
-  onRealTimeToggle
+  onRealTimeToggle,
 }: GraphSettingsProps) {
-  const [isExpanded, setIsExpanded] = useState(false)
+  const [isExpanded, setIsExpanded] = useState(false);
 
   // 設定値を更新するヘルパー関数
   const updateConfig = (updates: Partial<GraphConfig>) => {
-    onConfigChange({ ...config, ...updates })
-  }
+    onConfigChange({ ...config, ...updates });
+  };
 
   return (
     <div className="bg-white rounded-lg shadow-sm border">
@@ -54,7 +54,12 @@ export default function GraphSettings({
               stroke="currentColor"
               viewBox="0 0 24 24"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 9l-7 7-7-7"
+              />
             </svg>
           </button>
         </div>
@@ -136,14 +141,16 @@ export default function GraphSettings({
             <label className="block text-sm font-medium text-gray-700 mb-3">
               Y軸設定
             </label>
-            
+
             {/* 自動スケール切り替え */}
             <div className="mb-4">
               <label className="flex items-center cursor-pointer">
                 <input
                   type="checkbox"
                   checked={config.autoScale}
-                  onChange={(e) => updateConfig({ autoScale: e.target.checked })}
+                  onChange={(e) =>
+                    updateConfig({ autoScale: e.target.checked })
+                  }
                   className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
                 />
                 <span className="ml-2 text-sm text-gray-700">自動スケール</span>
@@ -163,9 +170,11 @@ export default function GraphSettings({
                   <input
                     type="number"
                     value={config.yAxisMin || ''}
-                    onChange={(e) => 
-                      updateConfig({ 
-                        yAxisMin: e.target.value ? parseFloat(e.target.value) : undefined 
+                    onChange={(e) =>
+                      updateConfig({
+                        yAxisMin: e.target.value
+                          ? parseFloat(e.target.value)
+                          : undefined,
                       })
                     }
                     placeholder="自動"
@@ -179,9 +188,11 @@ export default function GraphSettings({
                   <input
                     type="number"
                     value={config.yAxisMax || ''}
-                    onChange={(e) => 
-                      updateConfig({ 
-                        yAxisMax: e.target.value ? parseFloat(e.target.value) : undefined 
+                    onChange={(e) =>
+                      updateConfig({
+                        yAxisMax: e.target.value
+                          ? parseFloat(e.target.value)
+                          : undefined,
                       })
                     }
                     placeholder="自動"
@@ -207,25 +218,31 @@ export default function GraphSettings({
                 />
                 <span className="ml-2 text-sm text-gray-700">グリッド表示</span>
               </label>
-              
+
               <label className="flex items-center cursor-pointer">
                 <input
                   type="checkbox"
                   checked={config.showLegend}
-                  onChange={(e) => updateConfig({ showLegend: e.target.checked })}
+                  onChange={(e) =>
+                    updateConfig({ showLegend: e.target.checked })
+                  }
                   className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
                 />
                 <span className="ml-2 text-sm text-gray-700">凡例表示</span>
               </label>
-              
+
               <label className="flex items-center cursor-pointer">
                 <input
                   type="checkbox"
                   checked={config.showTooltip}
-                  onChange={(e) => updateConfig({ showTooltip: e.target.checked })}
+                  onChange={(e) =>
+                    updateConfig({ showTooltip: e.target.checked })
+                  }
                   className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
                 />
-                <span className="ml-2 text-sm text-gray-700">ツールチップ表示</span>
+                <span className="ml-2 text-sm text-gray-700">
+                  ツールチップ表示
+                </span>
               </label>
             </div>
           </div>
@@ -241,8 +258,8 @@ export default function GraphSettings({
                   showGrid: true,
                   showLegend: true,
                   showTooltip: true,
-                }
-                onConfigChange(defaultConfig)
+                };
+                onConfigChange(defaultConfig);
               }}
               className="w-full px-4 py-2 text-sm text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
             >
@@ -256,19 +273,23 @@ export default function GraphSettings({
       <div className="p-4 border-t border-gray-200 bg-gray-50">
         <div className="grid grid-cols-2 gap-4 text-xs text-gray-600">
           <div>
-            <span className="font-medium">時間範囲:</span> {config.timeRange / 1000}秒
+            <span className="font-medium">時間範囲:</span>{' '}
+            {config.timeRange / 1000}秒
           </div>
           <div>
-            <span className="font-medium">更新間隔:</span> {config.updateInterval}ms
+            <span className="font-medium">更新間隔:</span>{' '}
+            {config.updateInterval}ms
           </div>
           <div>
-            <span className="font-medium">Y軸:</span> {config.autoScale ? '自動' : '手動'}
+            <span className="font-medium">Y軸:</span>{' '}
+            {config.autoScale ? '自動' : '手動'}
           </div>
           <div>
-            <span className="font-medium">更新:</span> {realTimeEnabled ? '有効' : '無効'}
+            <span className="font-medium">更新:</span>{' '}
+            {realTimeEnabled ? '有効' : '無効'}
           </div>
         </div>
       </div>
     </div>
-  )
+  );
 }

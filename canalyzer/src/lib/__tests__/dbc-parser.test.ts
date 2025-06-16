@@ -29,11 +29,11 @@ BO_ 200 VehicleSpeed: 2 ECU2
       expect(result.success).toBe(true);
       expect(result.database).toBeDefined();
       expect(result.errors).toHaveLength(0);
-      
+
       if (result.database) {
         // メッセージ数の確認
         expect(result.database.messages.size).toBe(2);
-        
+
         // 特定のメッセージの確認
         const engineData = result.database.messages.get(100);
         expect(engineData).toBeDefined();
@@ -41,7 +41,7 @@ BO_ 200 VehicleSpeed: 2 ECU2
         expect(engineData?.length).toBe(8);
         expect(engineData?.sendingNode).toBe('ECU1');
         expect(engineData?.signals).toHaveLength(1);
-        
+
         // シグナルの確認
         const engineSpeed = engineData?.signals[0];
         expect(engineSpeed?.name).toBe('EngineSpeed');
@@ -110,7 +110,7 @@ BO_ 100 TestMessage: 8 ECU1
       if (result.database) {
         const message = result.database.messages.get(100);
         const signal = message?.signals[0];
-        
+
         expect(signal?.name).toBe('TestSignal');
         expect(signal?.startBit).toBe(8);
         expect(signal?.length).toBe(8);
@@ -141,7 +141,7 @@ BU_:
     it('nullまたはundefinedの入力でエラーを返す', () => {
       const nullResult = parser.parse(null as unknown as string);
       const undefinedResult = parser.parse(undefined as unknown as string);
-      
+
       expect(nullResult.success).toBe(false);
       expect(undefinedResult.success).toBe(false);
     });

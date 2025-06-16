@@ -1,10 +1,10 @@
-import { 
-  CANFrame, 
-  CANValue, 
-  CANDataSet, 
-  CANFrameAnalysis, 
-  ParseConfig, 
-  BitField 
+import {
+  CANFrame,
+  CANValue,
+  CANDataSet,
+  CANFrameAnalysis,
+  ParseConfig,
+  BitField,
 } from '../can';
 
 describe('CAN型定義', () => {
@@ -15,7 +15,7 @@ describe('CAN型定義', () => {
         data: new Uint8Array([0x01, 0x02, 0x03, 0x04]),
         timestamp: 1000,
         extended: false,
-        dlc: 4
+        dlc: 4,
       };
 
       expect(frame.id).toBe(0x123);
@@ -28,14 +28,14 @@ describe('CAN型定義', () => {
 
     it('拡張フレーム（29bit ID）をサポートする', () => {
       const extendedFrame: CANFrame = {
-        id: 0x1FFFFFFF, // 29bit最大値
-        data: new Uint8Array([0xFF]),
+        id: 0x1fffffff, // 29bit最大値
+        data: new Uint8Array([0xff]),
         timestamp: 2000,
         extended: true,
-        dlc: 1
+        dlc: 1,
       };
 
-      expect(extendedFrame.id).toBe(0x1FFFFFFF);
+      expect(extendedFrame.id).toBe(0x1fffffff);
       expect(extendedFrame.extended).toBe(true);
     });
 
@@ -45,7 +45,7 @@ describe('CAN型定義', () => {
         data: new Uint8Array([0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07]),
         timestamp: 1000,
         extended: false,
-        dlc: 8
+        dlc: 8,
       };
 
       expect(frame.data.length).toBe(8);
@@ -61,7 +61,7 @@ describe('CAN型定義', () => {
         rawValue: 100,
         physicalValue: 10.0,
         unit: 'km/h',
-        timestamp: 1000
+        timestamp: 1000,
       };
 
       expect(value.signalName).toBe('TestSignal');
@@ -79,7 +79,7 @@ describe('CAN型定義', () => {
         physicalValue: 3,
         unit: '',
         timestamp: 1000,
-        description: 'Drive_1'
+        description: 'Drive_1',
       };
 
       expect(valueWithDescription.description).toBe('Drive_1');
@@ -92,7 +92,7 @@ describe('CAN型定義', () => {
         rawValue: 1000,
         physicalValue: 10.0,
         unit: 'km/h',
-        timestamp: 1000
+        timestamp: 1000,
       };
 
       expect(valueWithoutDescription.description).toBeUndefined();
@@ -107,8 +107,8 @@ describe('CAN型定義', () => {
           data: new Uint8Array([0x01, 0x02]),
           timestamp: 1000,
           extended: false,
-          dlc: 2
-        }
+          dlc: 2,
+        },
       ];
 
       const values: CANValue[] = [
@@ -118,15 +118,15 @@ describe('CAN型定義', () => {
           rawValue: 1,
           physicalValue: 1.0,
           unit: 'unit',
-          timestamp: 1000
-        }
+          timestamp: 1000,
+        },
       ];
 
       const dataSet: CANDataSet = {
         name: 'TestDataSet',
         createdAt: Date.now(),
         frames,
-        values
+        values,
       };
 
       expect(dataSet.name).toBe('TestDataSet');
@@ -141,7 +141,7 @@ describe('CAN型定義', () => {
         createdAt: Date.now(),
         frames: [],
         values: [],
-        description: 'テスト用データセット'
+        description: 'テスト用データセット',
       };
 
       expect(dataSet.description).toBe('テスト用データセット');
@@ -155,7 +155,7 @@ describe('CAN型定義', () => {
         data: new Uint8Array([0x01]),
         timestamp: 1000,
         extended: false,
-        dlc: 1
+        dlc: 1,
       };
 
       const signals: CANValue[] = [
@@ -165,14 +165,14 @@ describe('CAN型定義', () => {
           rawValue: 1,
           physicalValue: 1.0,
           unit: 'unit',
-          timestamp: 1000
-        }
+          timestamp: 1000,
+        },
       ];
 
       const analysis: CANFrameAnalysis = {
         frame,
         messageName: 'TestMessage',
-        signals
+        signals,
       };
 
       expect(analysis.frame).toBe(frame);
@@ -186,18 +186,20 @@ describe('CAN型定義', () => {
         data: new Uint8Array([]),
         timestamp: 1000,
         extended: false,
-        dlc: 0
+        dlc: 0,
       };
 
       const analysisWithError: CANFrameAnalysis = {
         frame,
         messageName: 'Unknown',
         signals: [],
-        error: 'CAN ID 0x999のメッセージ定義が見つかりません'
+        error: 'CAN ID 0x999のメッセージ定義が見つかりません',
       };
 
       expect(analysisWithError.error).toBeDefined();
-      expect(analysisWithError.error).toContain('メッセージ定義が見つかりません');
+      expect(analysisWithError.error).toContain(
+        'メッセージ定義が見つかりません'
+      );
     });
   });
 
@@ -215,7 +217,7 @@ describe('CAN型定義', () => {
     it('時間範囲フィルターを設定できる', () => {
       const config: ParseConfig = {
         timeRangeStart: 1000,
-        timeRangeEnd: 5000
+        timeRangeEnd: 5000,
       };
 
       expect(config.timeRangeStart).toBe(1000);
@@ -224,7 +226,7 @@ describe('CAN型定義', () => {
 
     it('対象CAN IDリストを設定できる', () => {
       const config: ParseConfig = {
-        targetIds: [0x100, 0x200, 0x300]
+        targetIds: [0x100, 0x200, 0x300],
       };
 
       expect(config.targetIds).toEqual([0x100, 0x200, 0x300]);
@@ -233,7 +235,7 @@ describe('CAN型定義', () => {
 
     it('シグナルフィルターを設定できる', () => {
       const config: ParseConfig = {
-        signalFilter: ['Engine_RPM', 'Vehicle_Speed']
+        signalFilter: ['Engine_RPM', 'Vehicle_Speed'],
       };
 
       expect(config.signalFilter).toEqual(['Engine_RPM', 'Vehicle_Speed']);
@@ -242,7 +244,7 @@ describe('CAN型定義', () => {
 
     it('無効値除外フラグを設定できる', () => {
       const config: ParseConfig = {
-        excludeInvalidValues: true
+        excludeInvalidValues: true,
       };
 
       expect(config.excludeInvalidValues).toBe(true);
@@ -254,7 +256,7 @@ describe('CAN型定義', () => {
         timeRangeEnd: 5000,
         targetIds: [0x100, 0x200],
         signalFilter: ['Engine_RPM'],
-        excludeInvalidValues: true
+        excludeInvalidValues: true,
       };
 
       expect(config.timeRangeStart).toBe(1000);
@@ -271,7 +273,7 @@ describe('CAN型定義', () => {
         startBit: 0,
         length: 8,
         endianness: 'little',
-        signed: false
+        signed: false,
       };
 
       expect(bitField.startBit).toBe(0);
@@ -285,7 +287,7 @@ describe('CAN型定義', () => {
         startBit: 0,
         length: 16,
         endianness: 'big',
-        signed: false
+        signed: false,
       };
 
       expect(bigEndianField.endianness).toBe('big');
@@ -296,7 +298,7 @@ describe('CAN型定義', () => {
         startBit: 8,
         length: 16,
         endianness: 'little',
-        signed: true
+        signed: true,
       };
 
       expect(signedField.signed).toBe(true);
@@ -307,7 +309,7 @@ describe('CAN型定義', () => {
         startBit: 4,
         length: 12,
         endianness: 'little',
-        signed: false
+        signed: false,
       };
 
       expect(multiByteField.startBit).toBe(4);
@@ -322,7 +324,7 @@ describe('CAN型定義', () => {
         data: new Uint8Array([0x42]),
         timestamp: 1000,
         extended: false,
-        dlc: 1
+        dlc: 1,
       };
 
       const value: CANValue = {
@@ -331,13 +333,13 @@ describe('CAN型定義', () => {
         rawValue: 0x42,
         physicalValue: 66,
         unit: 'count',
-        timestamp: frame.timestamp
+        timestamp: frame.timestamp,
       };
 
       const analysis: CANFrameAnalysis = {
         frame,
         messageName: 'TestMessage',
-        signals: [value]
+        signals: [value],
       };
 
       // フレームと値のタイムスタンプが一致することを確認
@@ -351,7 +353,7 @@ describe('CAN型定義', () => {
         data: new Uint8Array([0x42]),
         timestamp: 1000,
         extended: false,
-        dlc: 1
+        dlc: 1,
       };
 
       const value: CANValue = {
@@ -360,14 +362,14 @@ describe('CAN型定義', () => {
         rawValue: 0x42,
         physicalValue: 66,
         unit: 'count',
-        timestamp: frame.timestamp
+        timestamp: frame.timestamp,
       };
 
       const dataSet: CANDataSet = {
         name: 'TestDataSet',
         createdAt: Date.now(),
         frames: [frame],
-        values: [value]
+        values: [value],
       };
 
       // データセット内のフレームと値が関連付けられていることを確認
@@ -383,33 +385,33 @@ describe('CAN型定義', () => {
           data: new Uint8Array([0x01]),
           timestamp: 1000,
           extended: false,
-          dlc: 1
+          dlc: 1,
         },
         {
           id: 0x200,
           data: new Uint8Array([0x02]),
           timestamp: 2000,
           extended: false,
-          dlc: 1
-        }
+          dlc: 1,
+        },
       ];
 
       const config: ParseConfig = {
         timeRangeStart: 1500,
-        targetIds: [0x200]
+        targetIds: [0x200],
       };
 
       // フレームのフィルタリングをシミュレート
       let filteredFrames = frames;
 
       if (config.timeRangeStart !== undefined) {
-        filteredFrames = filteredFrames.filter(frame => 
-          frame.timestamp >= config.timeRangeStart!
+        filteredFrames = filteredFrames.filter(
+          (frame) => frame.timestamp >= config.timeRangeStart!
         );
       }
 
       if (config.targetIds) {
-        filteredFrames = filteredFrames.filter(frame => 
+        filteredFrames = filteredFrames.filter((frame) =>
           config.targetIds!.includes(frame.id)
         );
       }
@@ -427,7 +429,7 @@ describe('CAN型定義', () => {
         data: new Uint8Array([]),
         timestamp: 1000,
         extended: false,
-        dlc: 0
+        dlc: 0,
       };
 
       expect(emptyFrame.data.length).toBe(0);
@@ -441,7 +443,7 @@ describe('CAN型定義', () => {
         rawValue: 0,
         physicalValue: NaN,
         unit: 'unit',
-        timestamp: 1000
+        timestamp: 1000,
       };
 
       expect(isNaN(nanValue.physicalValue)).toBe(true);
@@ -451,10 +453,10 @@ describe('CAN型定義', () => {
       const infinityValue: CANValue = {
         signalName: 'OverflowSignal',
         messageName: 'TestMessage',
-        rawValue: 0xFFFF,
+        rawValue: 0xffff,
         physicalValue: Infinity,
         unit: 'unit',
-        timestamp: 1000
+        timestamp: 1000,
       };
 
       expect(infinityValue.physicalValue).toBe(Infinity);
@@ -464,7 +466,7 @@ describe('CAN型定義', () => {
     it('空の配列を持つParseConfigを処理できる', () => {
       const config: ParseConfig = {
         targetIds: [],
-        signalFilter: []
+        signalFilter: [],
       };
 
       expect(config.targetIds).toEqual([]);

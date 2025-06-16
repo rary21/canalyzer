@@ -28,18 +28,21 @@
 ### コンポーネント構成
 
 1. **WebSocketサーバー** (`/src/server/websocket-server.js`)
+
    - WebSocket接続の管理
    - CANフレームのブロードキャスト
    - クライアントの購読管理
    - 自動ストリーミング開始/停止制御
 
 2. **CANインターフェース** (`/src/lib/can-interface.ts`)
+
    - 抽象CANインターフェース定義
    - 仮想CANインターフェース（開発用）
    - NullCANインターフェース（データ生成なし）
    - 実ハードウェアインターフェース（将来実装）
 
 3. **クライアントフック** (`/src/hooks/useWebSocket.ts`)
+
    - WebSocket接続管理
    - 自動再接続
    - メッセージ送受信
@@ -72,11 +75,8 @@ import { useRealtimeData } from '@/contexts/RealtimeDataContext';
 import RealtimeControl from '@/components/RealtimeControl';
 
 export default function MyComponent() {
-  const {
-    isRealtimeEnabled,
-    latestValues,
-    subscribeCANIds
-  } = useRealtimeData();
+  const { isRealtimeEnabled, latestValues, subscribeCANIds } =
+    useRealtimeData();
 
   // 特定のCAN IDを購読
   useEffect(() => {
@@ -104,6 +104,7 @@ export default function MyComponent() {
 ### サーバー → クライアント
 
 #### 接続ステータス
+
 ```json
 {
   "type": "status",
@@ -116,6 +117,7 @@ export default function MyComponent() {
 ```
 
 #### CANフレーム
+
 ```json
 {
   "type": "frame",
@@ -132,6 +134,7 @@ export default function MyComponent() {
 ```
 
 #### エラー通知
+
 ```json
 {
   "type": "error",
@@ -142,6 +145,7 @@ export default function MyComponent() {
 ### クライアント → サーバー
 
 #### ストリーミング開始
+
 ```json
 {
   "type": "start"
@@ -149,6 +153,7 @@ export default function MyComponent() {
 ```
 
 #### ストリーミング停止
+
 ```json
 {
   "type": "stop"
@@ -156,6 +161,7 @@ export default function MyComponent() {
 ```
 
 #### メッセージ購読
+
 ```json
 {
   "type": "subscribe",
@@ -164,6 +170,7 @@ export default function MyComponent() {
 ```
 
 #### フレーム送信
+
 ```json
 {
   "type": "send_frame",
@@ -177,6 +184,7 @@ export default function MyComponent() {
 ```
 
 #### ハートビート
+
 ```json
 {
   "type": "heartbeat"
@@ -207,7 +215,7 @@ const options = {
   reconnectAttempts: 5,
   reconnectInterval: 3000,
   heartbeatInterval: 30000,
-  timeout: 5000
+  timeout: 5000,
 };
 ```
 
@@ -227,7 +235,7 @@ WebSocketサーバーは、クライアントの接続状況に基づいて自�
 
 ```javascript
 // CANInterfaceFactory.create()の動作
-switch(type) {
+switch (type) {
   case 'virtual':
     // VirtualCANInterface: 100ms間隔で仮想データ生成
     return new VirtualCANInterface();
@@ -251,15 +259,17 @@ WebSocketクライアントからサーバーへCANフレームを送信可能�
 const ws = new WebSocket('ws://localhost:3000/ws');
 
 // CANフレーム送信
-ws.send(JSON.stringify({
-  type: 'send_frame',
-  frame: {
-    id: 0x123,
-    data: [0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08],
-    extended: false,
-    dlc: 8
-  }
-}));
+ws.send(
+  JSON.stringify({
+    type: 'send_frame',
+    frame: {
+      id: 0x123,
+      data: [0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08],
+      extended: false,
+      dlc: 8,
+    },
+  })
+);
 ```
 
 ### サンプル送信スクリプト
@@ -277,15 +287,15 @@ node examples/websocket-can-sender.js
 ```typescript
 export class MyCANInterface extends CANInterface {
   readonly name = 'My CAN Interface';
-  
+
   async open(): Promise<void> {
     // 実装
   }
-  
+
   async close(): Promise<void> {
     // 実装
   }
-  
+
   async send(frame: CANFrame): Promise<void> {
     // 実装
   }
@@ -305,11 +315,13 @@ export class MyCANInterface extends CANInterface {
 ### WebSocket接続エラー
 
 1. サーバーが起動しているか確認
+
    ```bash
    npm run dev
    ```
 
 2. ポート3000が使用されていないか確認
+
    ```bash
    lsof -i :3000
    ```

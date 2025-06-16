@@ -51,7 +51,7 @@ export function RealtimeControl({ className = '' }: RealtimeControlProps) {
     const seconds = Math.floor(ms / 1000);
     const minutes = Math.floor(seconds / 60);
     const hours = Math.floor(minutes / 60);
-    
+
     if (hours > 0) {
       return `${hours}:${(minutes % 60).toString().padStart(2, '0')}:${(seconds % 60).toString().padStart(2, '0')}`;
     }
@@ -61,10 +61,19 @@ export function RealtimeControl({ className = '' }: RealtimeControlProps) {
   return (
     <div className={`bg-white rounded-lg shadow-lg p-6 ${className}`}>
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-semibold text-gray-900">リアルタイム制御</h2>
+        <h2 className="text-xl font-semibold text-gray-900">
+          リアルタイム制御
+        </h2>
         <div className="flex items-center space-x-2">
           <span className={`text-sm font-medium ${getStatusColor()}`}>
-            {getStatusIcon()} {status === 'connected' ? '接続中' : status === 'connecting' ? '接続中...' : status === 'disconnected' ? '切断' : 'エラー'}
+            {getStatusIcon()}{' '}
+            {status === 'connected'
+              ? '接続中'
+              : status === 'connecting'
+                ? '接続中...'
+                : status === 'disconnected'
+                  ? '切断'
+                  : 'エラー'}
           </span>
         </div>
       </div>
@@ -93,20 +102,26 @@ export function RealtimeControl({ className = '' }: RealtimeControlProps) {
       {isConnected && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="bg-gray-50 rounded-lg p-4">
-            <div className="text-2xl font-bold text-blue-600">{stats.totalFrames}</div>
+            <div className="text-2xl font-bold text-blue-600">
+              {stats.totalFrames}
+            </div>
             <div className="text-sm text-gray-600">総フレーム数</div>
           </div>
-          
+
           <div className="bg-gray-50 rounded-lg p-4">
-            <div className="text-2xl font-bold text-green-600">{stats.framesPerSecond}</div>
+            <div className="text-2xl font-bold text-green-600">
+              {stats.framesPerSecond}
+            </div>
             <div className="text-sm text-gray-600">FPS</div>
           </div>
-          
+
           <div className="bg-gray-50 rounded-lg p-4">
-            <div className="text-2xl font-bold text-purple-600">{stats.uniqueMessages}</div>
+            <div className="text-2xl font-bold text-purple-600">
+              {stats.uniqueMessages}
+            </div>
             <div className="text-sm text-gray-600">メッセージ種類</div>
           </div>
-          
+
           <div className="bg-gray-50 rounded-lg p-4">
             <div className="text-2xl font-bold text-orange-600">
               {formatUptime(stats.connectionUptime)}
@@ -119,17 +134,28 @@ export function RealtimeControl({ className = '' }: RealtimeControlProps) {
       {/* メッセージ別統計 */}
       {isConnected && Object.keys(stats.dataPoints).length > 0 && (
         <div className="mt-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-3">メッセージ別受信数</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-3">
+            メッセージ別受信数
+          </h3>
           <div className="space-y-2">
             {Object.entries(stats.dataPoints)
               .sort(([, a], [, b]) => b - a)
               .slice(0, 5)
               .map(([messageId, count]) => (
-                <div key={messageId} className="flex justify-between items-center">
+                <div
+                  key={messageId}
+                  className="flex justify-between items-center"
+                >
                   <span className="text-sm text-gray-600">
-                    0x{parseInt(messageId).toString(16).toUpperCase().padStart(3, '0')}
+                    0x
+                    {parseInt(messageId)
+                      .toString(16)
+                      .toUpperCase()
+                      .padStart(3, '0')}
                   </span>
-                  <span className="text-sm font-medium text-gray-900">{count}</span>
+                  <span className="text-sm font-medium text-gray-900">
+                    {count}
+                  </span>
                 </div>
               ))}
           </div>

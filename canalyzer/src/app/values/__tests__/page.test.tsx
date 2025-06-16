@@ -5,14 +5,26 @@ import { DBCDatabase } from '@/types/dbc';
 
 // Next.jsのLinkコンポーネントをモック
 jest.mock('next/link', () => {
-  return function MockLink({ children, href, ...props }: { children: React.ReactNode; href: string; [key: string]: unknown }) {
-    return <a href={href} {...props}>{children}</a>;
+  return function MockLink({
+    children,
+    href,
+    ...props
+  }: {
+    children: React.ReactNode;
+    href: string;
+    [key: string]: unknown;
+  }) {
+    return (
+      <a href={href} {...props}>
+        {children}
+      </a>
+    );
   };
 });
 
 // DBCContextをモック
 jest.mock('@/contexts/DBCContext', () => ({
-  useDBCContext: jest.fn()
+  useDBCContext: jest.fn(),
 }));
 
 // TabNavigationをモック（簡単化）
@@ -24,7 +36,13 @@ jest.mock('@/components/TabNavigation', () => {
 
 // CANValuesDisplayをモック
 jest.mock('@/components/CANValuesDisplay', () => {
-  return function MockCANValuesDisplay({ values, isLoading }: { values: unknown[]; isLoading: boolean }) {
+  return function MockCANValuesDisplay({
+    values,
+    isLoading,
+  }: {
+    values: unknown[];
+    isLoading: boolean;
+  }) {
     if (isLoading) {
       return <div data-testid="loading">Loading...</div>;
     }
@@ -33,26 +51,28 @@ jest.mock('@/components/CANValuesDisplay', () => {
 });
 
 import { useDBCContext } from '@/contexts/DBCContext';
-const mockUseDBCContext = useDBCContext as jest.MockedFunction<typeof useDBCContext>;
+const mockUseDBCContext = useDBCContext as jest.MockedFunction<
+  typeof useDBCContext
+>;
 
 // テスト用のモックDBCデータ
 const mockDBCData: DBCDatabase = {
   version: '1.0.0',
-  nodes: [
-    { name: 'TestECU', comment: 'テスト用ECU' }
-  ],
+  nodes: [{ name: 'TestECU', comment: 'テスト用ECU' }],
   messages: new Map([
-    [0x100, {
-      id: 0x100,
-      name: 'TestMessage',
-      length: 8,
-      sendingNode: 'TestECU',
-      signals: [],
-      comment: 'テストメッセージ'
-    }]
-  ])
+    [
+      0x100,
+      {
+        id: 0x100,
+        name: 'TestMessage',
+        length: 8,
+        sendingNode: 'TestECU',
+        signals: [],
+        comment: 'テストメッセージ',
+      },
+    ],
+  ]),
 };
-
 
 const renderWithDBCContext = (dbcData: DBCDatabase | null = null) => {
   mockUseDBCContext.mockReturnValue({
@@ -61,7 +81,7 @@ const renderWithDBCContext = (dbcData: DBCDatabase | null = null) => {
     parseResult: null,
     setParseResult: jest.fn(),
     fileName: null,
-    setFileName: jest.fn()
+    setFileName: jest.fn(),
   });
 
   return render(<ValuesPage />);
@@ -76,14 +96,18 @@ describe('ValuesPage', () => {
     it('DBCデータがない場合でもページが表示される', () => {
       renderWithDBCContext(null);
 
-      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('CAN値表示');
+      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
+        'CAN値表示'
+      );
       expect(screen.getByTestId('can-values-display')).toBeInTheDocument();
     });
 
     it('DBCデータがある場合にCAN値表示が行われる', () => {
       renderWithDBCContext(mockDBCData);
 
-      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('CAN値表示');
+      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
+        'CAN値表示'
+      );
       expect(screen.getByTestId('can-values-display')).toBeInTheDocument();
     });
   });
@@ -121,7 +145,9 @@ describe('ValuesPage', () => {
     it('見出しが適切に設定されている', () => {
       renderWithDBCContext(mockDBCData);
 
-      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('CAN値表示');
+      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
+        'CAN値表示'
+      );
     });
   });
 });
