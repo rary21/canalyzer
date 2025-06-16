@@ -57,6 +57,12 @@ npm run build
 - プロダクションビルドの成功確認
 - ビルドエラーがある場合は修正する
 
+#### 5. formatter
+
+```bash
+npm run format
+```
+
 ### コードフォーマット
 
 - **Prettier設定**: `.prettierrc`に基づいてフォーマット
