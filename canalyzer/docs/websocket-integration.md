@@ -27,14 +27,16 @@
 
 ### コンポーネント構成
 
-1. **WebSocketサーバー** (`/src/server/websocket-server.ts`)
+1. **WebSocketサーバー** (`/src/server/websocket-server.js`)
    - WebSocket接続の管理
    - CANフレームのブロードキャスト
    - クライアントの購読管理
+   - 自動ストリーミング開始/停止制御
 
 2. **CANインターフェース** (`/src/lib/can-interface.ts`)
    - 抽象CANインターフェース定義
    - 仮想CANインターフェース（開発用）
+   - NullCANインターフェース（データ生成なし）
    - 実ハードウェアインターフェース（将来実装）
 
 3. **クライアントフック** (`/src/hooks/useWebSocket.ts`)
@@ -101,41 +103,83 @@ export default function MyComponent() {
 
 ### サーバー → クライアント
 
-#### 接続確立
+#### 接続ステータス
 ```json
 {
-  "type": "connection",
-  "status": "connected",
-  "timestamp": 1234567890
+  "type": "status",
+  "data": {
+    "connected": true,
+    "interface": "Virtual CAN Interface",
+    "streaming": false
+  }
 }
 ```
 
 #### CANフレーム
 ```json
 {
-  "type": "can_frame",
-  "payload": {
-    "id": 256,
-    "data": [1, 2, 3, 4, 5, 6, 7, 8],
-    "timestamp": 1234567890,
-    "extended": false,
-    "dlc": 8
-  },
-  "timestamp": 1234567890
+  "type": "frame",
+  "data": {
+    "frame": {
+      "id": 256,
+      "data": [1, 2, 3, 4, 5, 6, 7, 8],
+      "timestamp": 1234567890,
+      "extended": false,
+      "dlc": 8
+    }
+  }
+}
+```
+
+#### エラー通知
+```json
+{
+  "type": "error",
+  "error": "Connection failed"
 }
 ```
 
 ### クライアント → サーバー
 
-#### 購読リクエスト
+#### ストリーミング開始
+```json
+{
+  "type": "start"
+}
+```
+
+#### ストリーミング停止
+```json
+{
+  "type": "stop"
+}
+```
+
+#### メッセージ購読
 ```json
 {
   "type": "subscribe",
-  "payload": {
-    "canIds": [256, 257, 258],
-    "signals": ["EngineSpeed", "VehicleSpeed"]
-  },
-  "timestamp": 1234567890
+  "messageIds": [256, 257, 258]
+}
+```
+
+#### フレーム送信
+```json
+{
+  "type": "send_frame",
+  "frame": {
+    "id": 256,
+    "data": [1, 2, 3, 4, 5, 6, 7, 8],
+    "extended": false,
+    "dlc": 8
+  }
+}
+```
+
+#### ハートビート
+```json
+{
+  "type": "heartbeat"
 }
 ```
 
@@ -147,10 +191,10 @@ export default function MyComponent() {
 
 ```env
 # WebSocket接続URL
-NEXT_PUBLIC_WS_URL=ws://localhost:3000/api/ws
+NEXT_PUBLIC_WS_URL=ws://localhost:3000/ws
 
 # CANインターフェース設定
-CAN_INTERFACE_TYPE=virtual
+CAN_INTERFACE_TYPE=none        # none(デフォルト), virtual, hardware
 CAN_DEVICE_NAME=can0
 CAN_BITRATE=500000
 ```
@@ -159,12 +203,71 @@ CAN_BITRATE=500000
 
 ```typescript
 const options = {
-  url: 'ws://localhost:3000/api/ws',
+  url: 'ws://localhost:3000/ws',
   reconnectAttempts: 5,
   reconnectInterval: 3000,
   heartbeatInterval: 30000,
   timeout: 5000
 };
+```
+
+## 自動制御機能
+
+### クライアント接続ベースの自動制御
+
+WebSocketサーバーは、クライアントの接続状況に基づいて自動的にストリーミングを制御します：
+
+- **初回接続時**: 自動的にCANストリーミングを開始
+- **全クライアント切断時**: 自動的にCANストリーミングを停止
+- **手動制御**: クライアントから`start`/`stop`メッセージで明示的に制御可能
+
+### CANインターフェース選択
+
+環境変数`CAN_INTERFACE_TYPE`により、使用するCANインターフェースを制御：
+
+```javascript
+// CANInterfaceFactory.create()の動作
+switch(type) {
+  case 'virtual':
+    // VirtualCANInterface: 100ms間隔で仮想データ生成
+    return new VirtualCANInterface();
+  case 'hardware':
+    // SocketCAN対応（将来実装）
+    throw new Error('Hardware CAN Interface not implemented yet');
+  case 'none':
+  default:
+    // NullCANInterface: データ生成なし
+    return new NullCANInterface();
+}
+```
+
+## CANフレーム送信機能
+
+WebSocketクライアントからサーバーへCANフレームを送信可能：
+
+### 基本的な送信例
+
+```javascript
+const ws = new WebSocket('ws://localhost:3000/ws');
+
+// CANフレーム送信
+ws.send(JSON.stringify({
+  type: 'send_frame',
+  frame: {
+    id: 0x123,
+    data: [0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08],
+    extended: false,
+    dlc: 8
+  }
+}));
+```
+
+### サンプル送信スクリプト
+
+プロジェクトには簡単なCANフレーム送信スクリプトが含まれています：
+
+```bash
+node examples/websocket-can-sender.js
 ```
 
 ## 拡張ポイント
@@ -192,8 +295,10 @@ export class MyCANInterface extends CANInterface {
 ### カスタムメッセージタイプの追加
 
 1. `src/types/websocket.ts`に新しいメッセージタイプを定義
-2. `src/server/websocket-server.ts`にハンドラーを追加
+2. `src/server/websocket-server.js`にハンドラーを追加
 3. `src/hooks/useWebSocket.ts`にクライアント側の処理を追加
+
+**注意**: 現在、WebSocketサーバーはJavaScript版（`.js`）が本体として使用されており、TypeScript版（`.ts`）は型定義リファレンスとして残されています。
 
 ## トラブルシューティング
 
