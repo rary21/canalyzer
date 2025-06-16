@@ -1,19 +1,23 @@
 'use client'
 
 import { useDBCContext } from '@/contexts/DBCContext'
+import { useRealtimeData } from '@/contexts/RealtimeDataContext'
 import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import TabNavigation from '@/components/TabNavigation'
 import CANValuesDisplay from '@/components/CANValuesDisplay'
+import { RealtimeControl } from '@/components/RealtimeControl'
 import { CANParser } from '@/lib/can-parser'
 import { sampleDBCDatabase, sampleCANFrames } from '@/data/sample-can-data'
 import { CANValue } from '@/types/can'
 
 export default function ValuesPage() {
   const { dbcData } = useDBCContext()
+  const { currentData, isConnected, isStreaming } = useRealtimeData()
   const [canValues, setCanValues] = useState<CANValue[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [useSampleData, setUseSampleData] = useState(!dbcData)
+  const [dataMode, setDataMode] = useState<'static' | 'realtime'>('static')
 
   // 使用するDBCデータを決定
   const activeDBCData = useMemo(() => {
@@ -23,10 +27,12 @@ export default function ValuesPage() {
     return dbcData
   }, [dbcData, useSampleData])
 
-  // CANデータをパースしてシグナル値を抽出
+  // 静的データからCANシグナル値を抽出
   useEffect(() => {
-    if (!activeDBCData) {
-      setCanValues([])
+    if (!activeDBCData || dataMode !== 'static') {
+      if (dataMode === 'static') {
+        setCanValues([])
+      }
       return
     }
 
@@ -47,7 +53,40 @@ export default function ValuesPage() {
     } finally {
       setIsLoading(false)
     }
-  }, [activeDBCData])
+  }, [activeDBCData, dataMode])
+
+  // リアルタイムデータからCANシグナル値を抽出
+  useEffect(() => {
+    if (!activeDBCData || dataMode !== 'realtime' || !isConnected) {
+      return
+    }
+
+    try {
+      const parser = new CANParser(activeDBCData)
+      const realtimeValues: CANValue[] = []
+      
+      // 現在のフレームデータを解析
+      currentData.forEach((frame) => {
+        const analysis = parser.parseFrame(frame)
+        if (!analysis.error && analysis.signals.length > 0) {
+          realtimeValues.push(...analysis.signals)
+        }
+      })
+      
+      setCanValues(realtimeValues)
+    } catch (error) {
+      console.error('リアルタイムCANデータの解析に失敗しました:', error)
+    }
+  }, [activeDBCData, dataMode, currentData, isConnected])
+
+  // データモードの切り替え
+  useEffect(() => {
+    if (isStreaming && dataMode === 'static') {
+      setDataMode('realtime')
+    } else if (!isStreaming && dataMode === 'realtime') {
+      setDataMode('static')
+    }
+  }, [isStreaming, dataMode])
 
   if (!activeDBCData) {
     return (
@@ -103,13 +142,16 @@ export default function ValuesPage() {
           <div>
             <h1 className="text-3xl font-bold text-gray-900">CAN値表示</h1>
             <p className="text-gray-600 mt-1">
-              {useSampleData ? 'サンプルデータ' : 'アップロードされたDBC'} を使用してCANフレームを解析
+              {dataMode === 'realtime' 
+                ? 'リアルタイムCANデータを表示中' 
+                : `${useSampleData ? 'サンプルデータ' : 'アップロードされたDBC'} を使用してCANフレームを解析`
+              }
             </p>
           </div>
           
           <div className="flex items-center space-x-4">
-            {/* データソース切り替え */}
-            {dbcData && (
+            {/* データソース切り替え（静的データモードの場合のみ表示） */}
+            {dbcData && dataMode === 'static' && (
               <label className="flex items-center">
                 <input
                   type="checkbox"
@@ -121,6 +163,14 @@ export default function ValuesPage() {
               </label>
             )}
             
+            {/* リアルタイムモード表示 */}
+            {dataMode === 'realtime' && (
+              <span className="inline-flex items-center px-3 py-2 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                <span className="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></span>
+                リアルタイム
+              </span>
+            )}
+            
             <Link 
               href="/"
               className="inline-flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
@@ -129,6 +179,9 @@ export default function ValuesPage() {
             </Link>
           </div>
         </div>
+
+        {/* リアルタイム制御パネル */}
+        <RealtimeControl className="mb-8" />
 
         {/* 統計情報 */}
         {canValues.length > 0 && (
@@ -192,7 +245,7 @@ export default function ValuesPage() {
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-500">データソース</p>
                   <p className="text-lg font-semibold text-gray-900">
-                    {useSampleData ? 'サンプル' : 'アップロード'}
+                    {dataMode === 'realtime' ? 'リアルタイム' : useSampleData ? 'サンプル' : 'アップロード'}
                   </p>
                 </div>
               </div>

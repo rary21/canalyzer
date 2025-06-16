@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { DBCProvider } from '@/contexts/DBCContext';
+import { RealtimeDataProvider } from '@/contexts/RealtimeDataContext';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -19,7 +20,9 @@ export default function RootLayout({
     <html lang="ja">
       <body className={inter.className}>
         <DBCProvider>
-          {children}
+          <RealtimeDataProvider>
+            {children}
+          </RealtimeDataProvider>
         </DBCProvider>
       </body>
     </html>
