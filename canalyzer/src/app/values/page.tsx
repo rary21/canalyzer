@@ -9,15 +9,16 @@ import CANValuesDisplay from '@/components/CANValuesDisplay'
 import { RealtimeControl } from '@/components/RealtimeControl'
 import { CANParser } from '@/lib/can-parser'
 import { sampleDBCDatabase, sampleCANFrames } from '@/data/sample-can-data'
-import { CANValue } from '@/types/can'
+import { CANValue, CANFrame } from '@/types/can'
 
 export default function ValuesPage() {
-  const { dbcData } = useDBCContext()
+  const { dbcData, fileName: dbcFileName } = useDBCContext()
   const { currentData, isConnected, isStreaming } = useRealtimeData()
   const [canValues, setCanValues] = useState<CANValue[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [useSampleData, setUseSampleData] = useState(!dbcData)
   const [dataMode, setDataMode] = useState<'static' | 'realtime'>('static')
+  const [unmappedFrames, setUnmappedFrames] = useState<Map<number, CANFrame>>(new Map())
 
   // 使用するDBCデータを決定
   const activeDBCData = useMemo(() => {
@@ -65,15 +66,37 @@ export default function ValuesPage() {
       const parser = new CANParser(activeDBCData)
       const realtimeValues: CANValue[] = []
       
+      // デバッグ用: DBCに定義されているメッセージIDを取得
+      const dbcMessageIds = Array.from(activeDBCData.messages.keys())
+      console.log('DBC定義メッセージID:', dbcMessageIds.map(id => `0x${id.toString(16).toUpperCase()}`))
+      
+      // デバッグ用: 受信フレームのIDを取得
+      const receivedIds = Array.from(currentData.keys())
+      console.log('受信フレームID:', receivedIds.map(id => `0x${id.toString(16).toUpperCase()}`))
+      
       // 現在のフレームデータを解析
+      const newUnmappedFrames = new Map<number, CANFrame>()
+      
       currentData.forEach((frame) => {
         const analysis = parser.parseFrame(frame)
+        
+        // デバッグ用: 各フレームの解析結果を出力
+        if (analysis.error) {
+          console.warn(`フレーム解析エラー (ID: 0x${frame.id.toString(16).toUpperCase()}):`, analysis.error)
+          // DBCに定義されていないフレームを記録
+          newUnmappedFrames.set(frame.id, frame)
+        } else {
+          console.log(`フレーム解析成功 (ID: 0x${frame.id.toString(16).toUpperCase()}, メッセージ: ${analysis.messageName}, シグナル数: ${analysis.signals.length})`)
+        }
+        
         if (!analysis.error && analysis.signals.length > 0) {
           realtimeValues.push(...analysis.signals)
         }
       })
       
+      console.log(`解析されたシグナル値の総数: ${realtimeValues.length}`)
       setCanValues(realtimeValues)
+      setUnmappedFrames(newUnmappedFrames)
     } catch (error) {
       console.error('リアルタイムCANデータの解析に失敗しました:', error)
     }
@@ -183,6 +206,108 @@ export default function ValuesPage() {
         {/* リアルタイム制御パネル */}
         <RealtimeControl className="mb-8" />
 
+        {/* DBC情報パネル（リアルタイムモード時のみ表示） */}
+        {dataMode === 'realtime' && activeDBCData && (
+          <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">DBC情報</h2>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* DBCファイル情報 */}
+              <div>
+                <h3 className="text-lg font-medium text-gray-800 mb-3">使用中のDBCファイル</h3>
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <p className="text-sm text-gray-600 mb-2">ファイル名:</p>
+                  <p className="font-mono text-sm bg-white px-2 py-1 rounded border">
+                    {useSampleData ? 'サンプルDBC' : (dbcFileName || 'アップロードされたDBC')}
+                  </p>
+                  
+                  <p className="text-sm text-gray-600 mb-2 mt-4">定義済みメッセージID:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {Array.from(activeDBCData.messages.keys()).map(id => (
+                      <span key={id} className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        0x{id.toString(16).toUpperCase().padStart(3, '0')}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              
+              {/* 受信メッセージ情報 */}
+              <div>
+                <h3 className="text-lg font-medium text-gray-800 mb-3">受信中のメッセージ</h3>
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <p className="text-sm text-gray-600 mb-2">定義済みメッセージ:</p>
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {Array.from(currentData.keys())
+                      .filter(id => activeDBCData.messages.has(id))
+                      .map(id => (
+                        <span key={id} className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                          0x{id.toString(16).toUpperCase().padStart(3, '0')}
+                        </span>
+                      ))}
+                  </div>
+                  
+                  {unmappedFrames.size > 0 && (
+                    <>
+                      <p className="text-sm text-gray-600 mb-2">
+                        未定義メッセージ ({unmappedFrames.size}件):
+                      </p>
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        {Array.from(unmappedFrames.keys()).map(id => (
+                          <span key={id} className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                            0x{id.toString(16).toUpperCase().padStart(3, '0')}
+                          </span>
+                        ))}
+                      </div>
+                      
+                      <div className="mt-4">
+                        <p className="text-sm text-gray-600 mb-2">未定義メッセージの詳細:</p>
+                        <div className="max-h-40 overflow-y-auto bg-white border rounded p-2">
+                          {Array.from(unmappedFrames.entries()).map(([id, frame]) => (
+                            <div key={id} className="text-xs font-mono mb-2 pb-2 border-b border-gray-100 last:border-b-0">
+                              <div className="flex justify-between items-center mb-1">
+                                <span className="font-semibold">ID: 0x{id.toString(16).toUpperCase().padStart(3, '0')}</span>
+                                <span className="text-gray-500">DLC: {frame.dlc}</span>
+                              </div>
+                              <div className="text-gray-600">
+                                データ: {Array.from(frame.data).map(b => b.toString(16).toUpperCase().padStart(2, '0')).join(' ')}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </>
+                  )}
+                  
+                  {unmappedFrames.size === 0 && Array.from(currentData.keys()).length === 0 && (
+                    <p className="text-sm text-gray-500 italic">メッセージを受信していません</p>
+                  )}
+                </div>
+              </div>
+            </div>
+            
+            {/* 問題解決のガイダンス */}
+            {unmappedFrames.size > 0 && (
+              <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <div className="flex">
+                  <div className="flex-shrink-0">
+                    <svg className="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div className="ml-3">
+                    <h3 className="text-sm font-medium text-yellow-800">未定義メッセージが検出されました</h3>
+                    <p className="mt-1 text-sm text-yellow-700">
+                      上記の未定義メッセージIDをDBCファイルに追加することで、これらのCANフレームも解析・表示できるようになります。
+                      または、WebSocketサーバーから送信されるメッセージIDがDBCファイルの定義と一致するように調整してください。
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* 統計情報 */}
         {canValues.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
@@ -252,6 +377,7 @@ export default function ValuesPage() {
             </div>
           </div>
         )}
+
 
         {/* CANValuesDisplayコンポーネント */}
         <CANValuesDisplay values={canValues} isLoading={isLoading} />
