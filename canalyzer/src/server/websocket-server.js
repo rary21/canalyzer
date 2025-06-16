@@ -1,5 +1,41 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 const WebSocket = require('ws');
 const WebSocketServer = WebSocket.Server;
+
+// 何もしないCANインターフェース
+class NullCANInterface {
+  constructor() {
+    this.isRunning = false;
+    this.frameListeners = [];
+    this.errorListeners = [];
+  }
+
+  async start() {
+    this.isRunning = true;
+    console.log('Null CAN interface started (no data will be generated)');
+  }
+
+  async stop() {
+    this.isRunning = false;
+    console.log('Null CAN interface stopped');
+  }
+
+  onFrame(callback) {
+    this.frameListeners.push(callback);
+  }
+
+  onError(callback) {
+    this.errorListeners.push(callback);
+  }
+
+  isConnected() {
+    return this.isRunning;
+  }
+
+  getName() {
+    return 'Null CAN Interface';
+  }
+}
 
 class VirtualCANInterface {
   constructor() {
@@ -115,10 +151,34 @@ class VirtualCANInterface {
   }
 }
 
+// CANインターフェースファクトリー
+class CANInterfaceFactory {
+  static create(type = 'none') {
+    switch (type.toLowerCase()) {
+      case 'virtual':
+        console.log('Creating Virtual CAN Interface');
+        return new VirtualCANInterface();
+      case 'hardware':
+        console.log('Creating Hardware CAN Interface (not implemented yet)');
+        // TODO: 将来的にSocketCANインターフェースを実装
+        throw new Error('Hardware CAN Interface not implemented yet');
+      case 'none':
+      default:
+        console.log('Creating Null CAN Interface');
+        return new NullCANInterface();
+    }
+  }
+}
+
 class CANWebSocketServer {
   constructor(server) {
     this.wss = new WebSocketServer({ server, path: '/ws' });
-    this.canInterface = new VirtualCANInterface();
+    
+    // 環境変数からCANインターフェースタイプを取得（デフォルト: none）
+    const interfaceType = process.env.CAN_INTERFACE_TYPE || 'none';
+    console.log(`Initializing CAN interface with type: ${interfaceType}`);
+    
+    this.canInterface = CANInterfaceFactory.create(interfaceType);
     this.clients = new Map();
     this.isStreaming = false;
     
@@ -156,6 +216,12 @@ class CANWebSocketServer {
         }
       });
       
+      // 初回接続時にストリーミングを自動開始
+      if (this.clients.size === 1 && !this.isStreaming) {
+        console.log('First client connected, starting CAN streaming automatically');
+        this.startStreaming();
+      }
+      
       // 切断ハンドラー
       ws.on('close', () => {
         console.log('WebSocket client disconnected');
@@ -163,6 +229,7 @@ class CANWebSocketServer {
         
         // クライアントがいなくなったらストリーミングを停止
         if (this.clients.size === 0 && this.isStreaming) {
+          console.log('Last client disconnected, stopping CAN streaming');
           this.stopStreaming();
         }
       });
@@ -208,10 +275,12 @@ class CANWebSocketServer {
         break;
         
       case 'start':
+        console.log('Client requested start streaming');
         this.startStreaming();
         break;
         
       case 'stop':
+        console.log('Client requested stop streaming');
         this.stopStreaming();
         break;
         
@@ -292,12 +361,15 @@ class CANWebSocketServer {
   }
 
   async startStreaming() {
-    if (this.isStreaming) return;
+    if (this.isStreaming) {
+      console.log('CAN streaming is already active');
+      return;
+    }
     
     try {
       await this.canInterface.start();
       this.isStreaming = true;
-      console.log('CAN streaming started');
+      console.log(`CAN streaming started with ${this.clients.size} connected client(s)`);
       
       // 全クライアントに状態を通知
       this.broadcastStatus({
@@ -311,12 +383,15 @@ class CANWebSocketServer {
   }
 
   async stopStreaming() {
-    if (!this.isStreaming) return;
+    if (!this.isStreaming) {
+      console.log('CAN streaming is already stopped');
+      return;
+    }
     
     try {
       await this.canInterface.stop();
       this.isStreaming = false;
-      console.log('CAN streaming stopped');
+      console.log(`CAN streaming stopped (${this.clients.size} client(s) remaining)`);
       
       // 全クライアントに状態を通知
       this.broadcastStatus({
