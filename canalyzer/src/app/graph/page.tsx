@@ -44,6 +44,7 @@ export default function GraphPage() {
   // CANデータをパースしてシグナル値を抽出
   useEffect(() => {
     if (!activeDBCData) {
+      console.log('DBCデータがありません');
       setCanValues([]);
       return;
     }
@@ -57,6 +58,9 @@ export default function GraphPage() {
       const dataSet = parser.parseDataSet(sampleCANFrames, {
         excludeInvalidValues: true,
       });
+
+      console.log('解析されたCANデータセット:', dataSet);
+      console.log('利用可能なシグナル数:', dataSet.values.length);
 
       setCanValues(dataSet.values);
     } catch (error) {

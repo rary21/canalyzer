@@ -25,6 +25,7 @@ export default function SignalSelector({
 
   // ユニークなシグナル一覧を作成
   const uniqueSignals = useMemo(() => {
+    console.log('利用可能なシグナル数:', availableSignals.length);
     const signalMap = new Map<string, CANValue>();
 
     availableSignals.forEach((signal) => {
@@ -33,7 +34,9 @@ export default function SignalSelector({
       }
     });
 
-    return Array.from(signalMap.values());
+    const unique = Array.from(signalMap.values());
+    console.log('ユニークなシグナル数:', unique.length);
+    return unique;
   }, [availableSignals]);
 
   // 検索フィルター

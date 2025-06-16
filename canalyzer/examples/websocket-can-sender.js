@@ -14,22 +14,16 @@ const SEND_INTERVAL = 1000; // 1秒間隔
 // 送信するサンプルCANフレーム
 const SAMPLE_FRAMES = [
   {
-    id: 0x123,
+    id: 170,
     data: new Uint8Array([0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08]),
     extended: false,
     dlc: 8,
   },
   {
-    id: 0x456,
-    data: new Uint8Array([0xff, 0xee, 0xdd, 0xcc]),
+    id: 170,
+    data: new Uint8Array([0x01, 0x82, 0x03, 0x84, 0x05, 0x86, 0x07, 0x88]),
     extended: false,
-    dlc: 4,
-  },
-  {
-    id: 0x789,
-    data: new Uint8Array([0xaa, 0xbb]),
-    extended: false,
-    dlc: 2,
+    dlc: 8,
   },
 ];
 
