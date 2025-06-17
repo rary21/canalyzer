@@ -10,17 +10,32 @@ import GraphSettings from '@/components/GraphSettings';
 import { useRealtimeGraph } from '@/hooks/useRealtimeGraph';
 import { CANParser } from '@/lib/can-parser';
 import { sampleDBCDatabase, sampleCANFrames } from '@/data/sample-can-data';
-import { CANValue } from '@/types/can';
+import { CANValue, CANFrame } from '@/types/can';
+import { useRealtimeData } from '@/contexts/RealtimeDataContext';
 
 export default function GraphPage() {
   const { dbcData } = useDBCContext();
   const [canValues, setCanValues] = useState<CANValue[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [useSampleData, setUseSampleData] = useState(!dbcData);
+  const [dataMode, setDataMode] = useState<'static' | 'realtime'>('static');
+
+  // リアルタイムデータのフック
+  const { currentData, isConnected, isStreaming } = useRealtimeData();
 
   // 使用するDBCデータを決定
   const activeDBCData = useMemo(() => {
-    return dbcData || (useSampleData ? sampleDBCDatabase : null);
+    console.log('activeDBCData算出:', {
+      dbcData: !!dbcData,
+      useSampleData,
+      sampleDBCDatabase: !!sampleDBCDatabase,
+    });
+    const result = dbcData || (useSampleData ? sampleDBCDatabase : null);
+    console.log('activeDBCData結果:', !!result);
+    if (result) {
+      console.log('Messages count:', result.messages?.size || 0);
+    }
+    return result;
   }, [dbcData, useSampleData]);
 
   // リアルタイムグラフのフック
@@ -41,11 +56,12 @@ export default function GraphPage() {
     },
   });
 
-  // CANデータをパースしてシグナル値を抽出
+  // 静的データのパース
   useEffect(() => {
-    if (!activeDBCData) {
-      console.log('DBCデータがありません');
-      setCanValues([]);
+    if (!activeDBCData || dataMode !== 'static') {
+      if (dataMode === 'static') {
+        setCanValues([]);
+      }
       return;
     }
 
@@ -69,7 +85,42 @@ export default function GraphPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [activeDBCData]);
+  }, [activeDBCData, dataMode]);
+
+  // リアルタイムデータからCANシグナル値を抽出
+  useEffect(() => {
+    if (!activeDBCData || dataMode !== 'realtime') {
+      return;
+    }
+
+    try {
+      const parser = new CANParser(activeDBCData);
+      const realtimeValues: CANValue[] = [];
+
+      // 現在のフレームデータを解析
+      currentData.forEach((frame: CANFrame) => {
+        const analysis = parser.parseFrame(frame);
+
+        if (!analysis.error && analysis.signals.length > 0) {
+          realtimeValues.push(...analysis.signals);
+        }
+      });
+
+      console.log(`解析されたシグナル値の総数: ${realtimeValues.length}`);
+      setCanValues(realtimeValues);
+    } catch (error) {
+      console.error('リアルタイムCANデータの解析に失敗しました:', error);
+    }
+  }, [activeDBCData, dataMode, currentData, isConnected]);
+
+  // データモードの切り替え
+  useEffect(() => {
+    if (isStreaming && dataMode === 'static') {
+      setDataMode('realtime');
+    } else if (!isStreaming && dataMode === 'realtime') {
+      setDataMode('static');
+    }
+  }, [isStreaming, dataMode]);
 
   // DBCデータがない場合の表示
   if (!activeDBCData) {
@@ -156,16 +207,46 @@ export default function GraphPage() {
               リアルタイムグラフ
             </h1>
             <p className="text-gray-600 mt-1">
-              {useSampleData && !dbcData
-                ? 'サンプルデータ'
-                : 'アップロードされたDBC'}{' '}
+              {dataMode === 'realtime'
+                ? 'リアルタイムデータ'
+                : useSampleData && !dbcData
+                  ? 'サンプルデータ'
+                  : 'アップロードされたDBC'}{' '}
               を使用したシグナル時系列表示
             </p>
           </div>
 
           <div className="flex items-center space-x-4">
+            {/* データモード切り替え */}
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => setDataMode('static')}
+                className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
+                  dataMode === 'static'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                静的データ
+              </button>
+              <button
+                onClick={() => setDataMode('realtime')}
+                disabled={!isConnected}
+                className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
+                  dataMode === 'realtime'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300 disabled:opacity-50'
+                }`}
+              >
+                リアルタイム
+                {isStreaming && (
+                  <span className="ml-2 inline-block w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                )}
+              </button>
+            </div>
+
             {/* データソース切り替え */}
-            {dbcData && (
+            {dbcData && dataMode === 'static' && (
               <label className="flex items-center">
                 <input
                   type="checkbox"
@@ -301,15 +382,29 @@ export default function GraphPage() {
               <div className="flex items-center">
                 <div className="flex-shrink-0">
                   <div
-                    className={`w-2 h-2 rounded-full ${graphState.realTimeEnabled ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`}
+                    className={`w-2 h-2 rounded-full ${
+                      dataMode === 'realtime' && isStreaming
+                        ? 'bg-green-500 animate-pulse'
+                        : graphState.realTimeEnabled
+                          ? 'bg-blue-500'
+                          : 'bg-gray-400'
+                    }`}
                   ></div>
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-500">
-                    リアルタイム更新
+                    {dataMode === 'realtime' ? 'WebSocket接続' : 'グラフ更新'}
                   </p>
                   <p className="text-lg font-semibold text-gray-900">
-                    {graphState.realTimeEnabled ? '有効' : '無効'}
+                    {dataMode === 'realtime'
+                      ? isStreaming
+                        ? 'ストリーミング中'
+                        : isConnected
+                          ? '接続済み'
+                          : '未接続'
+                      : graphState.realTimeEnabled
+                        ? '有効'
+                        : '無効'}
                   </p>
                 </div>
               </div>
