@@ -68,16 +68,6 @@ export class CANParser {
    * @returns CANデータセット
    */
   parseDataSet(frames: CANFrame[], config: ParseConfig = {}): CANDataSet {
-    console.log(
-      `parseDataSet: 入力フレーム数=${frames.length}, config=`,
-      config
-    );
-    console.log(
-      'DBC messages available:',
-      Array.from(this.database.messages.keys()).map(
-        (id) => `0x${id.toString(16)}`
-      )
-    );
     // フィルタリング
     let filteredFrames = frames;
 
@@ -110,13 +100,8 @@ export class CANParser {
 
     // 解析実行
     const allValues: CANValue[] = [];
-    console.log(`parseDataSet: フィルタ後フレーム数=${filteredFrames.length}`);
-
     for (const frame of filteredFrames) {
       const analysis = this.parseFrame(frame);
-      console.log(
-        `Frame 0x${frame.id.toString(16)}: signals=${analysis.signals.length}, error=${analysis.error || 'none'}`
-      );
 
       if (!analysis.error) {
         let signals = analysis.signals;
@@ -130,19 +115,15 @@ export class CANParser {
 
         // 無効値除外
         if (config.excludeInvalidValues) {
-          const beforeFilter = signals.length;
           signals = signals.filter(
             (signal) =>
               !isNaN(signal.physicalValue) && isFinite(signal.physicalValue)
           );
-          console.log(`無効値フィルタ: ${beforeFilter} -> ${signals.length}`);
         }
 
         allValues.push(...signals);
       }
     }
-
-    console.log(`parseDataSet: 最終的なシグナル値数=${allValues.length}`);
 
     return {
       name: `CANデータセット_${new Date().toISOString()}`,
@@ -163,9 +144,6 @@ export class CANParser {
     frame: CANFrame,
     signal: CANSignal
   ): CANValue | null {
-    console.log(
-      `extractSignalValue: signal=${signal.name}, startBit=${signal.startBit}, length=${signal.length}`
-    );
     try {
       // ビットフィールド情報を構築
       const bitField: BitField = {
@@ -177,15 +155,9 @@ export class CANParser {
 
       // 生の値を抽出
       const rawValue = this.extractBits(frame.data, bitField);
-      console.log(
-        `extractBits結果: rawValue=${rawValue}, factor=${signal.factor}, offset=${signal.offset}`
-      );
 
       // 物理値に変換
       const physicalValue = rawValue * signal.factor + signal.offset;
-      console.log(
-        `物理値変換: ${rawValue} * ${signal.factor} + ${signal.offset} = ${physicalValue}`
-      );
 
       // 値の説明を取得
       const description = signal.values?.[rawValue];
@@ -200,9 +172,6 @@ export class CANParser {
         description,
       };
 
-      console.log(
-        `extractSignalValue成功: ${signal.name} = ${physicalValue} ${signal.unit}`
-      );
       return result;
     } catch (error) {
       console.warn(`シグナル ${signal.name} の抽出に失敗:`, error);

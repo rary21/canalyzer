@@ -21,7 +21,7 @@ export default function GraphPage() {
   const [dataMode, setDataMode] = useState<'static' | 'realtime'>('static');
 
   // リアルタイムデータのフック
-  const { currentData, isConnected, isStreaming } = useRealtimeData();
+  const { historicalData, isConnected, isStreaming } = useRealtimeData();
 
   // 使用するDBCデータを決定
   const activeDBCData = useMemo(() => {
@@ -89,29 +89,45 @@ export default function GraphPage() {
 
   // リアルタイムデータからCANシグナル値を抽出
   useEffect(() => {
-    if (!activeDBCData || dataMode !== 'realtime') {
+    if (!activeDBCData || dataMode !== 'realtime' || !isConnected) {
       return;
     }
 
     try {
       const parser = new CANParser(activeDBCData);
       const realtimeValues: CANValue[] = [];
+      const processedTimestamps = new Set<string>();
 
-      // 現在のフレームデータを解析
-      currentData.forEach((frame: CANFrame) => {
+      // 履歴データから全フレームを収集（最新のデータを含む）
+      const allFrames: CANFrame[] = [];
+
+      // historicalDataから全ての履歴フレームを収集
+      historicalData.forEach((frames) => {
+        allFrames.push(...frames);
+      });
+
+      // タイムスタンプでソート（新しい順）
+      allFrames.sort((a, b) => b.timestamp - a.timestamp);
+
+      // 重複を避けつつ、各フレームを解析
+      for (const frame of allFrames) {
+        const frameKey = `${frame.id}-${frame.timestamp}`;
+        if (processedTimestamps.has(frameKey)) continue;
+        processedTimestamps.add(frameKey);
+
         const analysis = parser.parseFrame(frame);
-
         if (!analysis.error && analysis.signals.length > 0) {
           realtimeValues.push(...analysis.signals);
         }
-      });
+      }
 
       console.log(`解析されたシグナル値の総数: ${realtimeValues.length}`);
+      console.log(`処理されたフレーム数: ${processedTimestamps.size}`);
       setCanValues(realtimeValues);
     } catch (error) {
       console.error('リアルタイムCANデータの解析に失敗しました:', error);
     }
-  }, [activeDBCData, dataMode, currentData, isConnected]);
+  }, [activeDBCData, dataMode, historicalData, isConnected]);
 
   // データモードの切り替え
   useEffect(() => {
