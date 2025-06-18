@@ -1,7 +1,7 @@
 import { createServer } from 'http';
 import { parse } from 'url';
 import next from 'next';
-import { setupWebSocketServer } from './src/server/websocket-server';
+// import { setupWebSocketServer } from './src/server/websocket-server';
 
 const dev = process.env.NODE_ENV !== 'production';
 const hostname = 'localhost';
@@ -24,11 +24,11 @@ app.prepare().then(() => {
   });
 
   // WebSocketサーバーをセットアップ
-  setupWebSocketServer(server);
+  // setupWebSocketServer(server);
 
   server.listen(port, (err?: Error) => {
     if (err) throw err;
     console.log(`> Ready on http://${hostname}:${port}`);
-    console.log('> WebSocket server is running');
+    // console.log('> WebSocket server is running');
   });
 });

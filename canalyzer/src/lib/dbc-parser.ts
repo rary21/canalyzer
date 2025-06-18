@@ -39,15 +39,17 @@ export class DBCParser {
       };
     }
 
-    // 空ファイルのチェック
+    // 空ファイルのチェック - 空ファイルは有効なDBCデータベースとして扱う
     if (content.trim() === '') {
-      errors.push({
-        line: 0,
-        message: ErrorMessages.FILE_EMPTY,
-        type: 'SYNTAX_ERROR',
-      });
+      const database: DBCDatabase = {
+        version: '',
+        nodes: [],
+        messages: new Map(),
+      };
+
       return {
-        success: false,
+        success: true,
+        database,
         errors,
         warnings,
       };

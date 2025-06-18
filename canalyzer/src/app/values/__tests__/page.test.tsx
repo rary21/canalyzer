@@ -27,6 +27,11 @@ jest.mock('@/contexts/DBCContext', () => ({
   useDBCContext: jest.fn(),
 }));
 
+// RealtimeDataContextをモック
+jest.mock('@/contexts/RealtimeDataContext', () => ({
+  useRealtimeData: jest.fn(),
+}));
+
 // TabNavigationをモック（簡単化）
 jest.mock('@/components/TabNavigation', () => {
   return function MockTabNavigation() {
@@ -51,8 +56,14 @@ jest.mock('@/components/CANValuesDisplay', () => {
 });
 
 import { useDBCContext } from '@/contexts/DBCContext';
+import { useRealtimeData } from '@/contexts/RealtimeDataContext';
+
 const mockUseDBCContext = useDBCContext as jest.MockedFunction<
   typeof useDBCContext
+>;
+
+const mockUseRealtimeData = useRealtimeData as jest.MockedFunction<
+  typeof useRealtimeData
 >;
 
 // テスト用のモックDBCデータ
@@ -82,6 +93,26 @@ const renderWithDBCContext = (dbcData: DBCDatabase | null = null) => {
     setParseResult: jest.fn(),
     fileName: null,
     setFileName: jest.fn(),
+  });
+
+  mockUseRealtimeData.mockReturnValue({
+    isConnected: false,
+    isStreaming: false,
+    status: 'disconnected' as const,
+    currentData: new Map(),
+    historicalData: new Map(),
+    startRealtime: jest.fn(),
+    stopRealtime: jest.fn(),
+    subscribe: jest.fn(),
+    unsubscribe: jest.fn(),
+    stats: {
+      totalFrames: 0,
+      framesPerSecond: 0,
+      uniqueMessages: 0,
+      connectionUptime: 0,
+      lastUpdate: 0,
+      dataPoints: {},
+    },
   });
 
   return render(<ValuesPage />);

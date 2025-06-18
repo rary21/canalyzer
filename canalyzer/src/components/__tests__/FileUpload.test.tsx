@@ -1,6 +1,29 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  act,
+} from '@testing-library/react';
 import FileUpload from '../FileUpload';
 import { DBCProvider } from '@/contexts/DBCContext';
+
+// Next.jsルーターをモック
+const mockPush = jest.fn();
+const mockReplace = jest.fn();
+
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: mockPush,
+    replace: mockReplace,
+    back: jest.fn(),
+    forward: jest.fn(),
+    refresh: jest.fn(),
+    prefetch: jest.fn(),
+  }),
+  usePathname: () => '/',
+  useSearchParams: () => new URLSearchParams(),
+}));
 
 // DBCParserをモック
 const mockDBCParser = {
@@ -71,7 +94,9 @@ describe('FileUpload', () => {
       writable: false,
     });
 
-    fireEvent.change(input);
+    act(() => {
+      fireEvent.change(input);
+    });
 
     await waitFor(() => {
       expect(screen.getByText('test.dbc')).toBeInTheDocument();
@@ -82,10 +107,7 @@ describe('FileUpload', () => {
     );
   });
 
-  it('非DBCファイルを選択した場合アラートが表示される', () => {
-    // alertをモック
-    const alertSpy = jest.spyOn(window, 'alert').mockImplementation(() => {});
-
+  it('非DBCファイルを選択した場合エラーが表示される', async () => {
     render(
       <DBCProvider>
         <FileUpload />
@@ -105,11 +127,13 @@ describe('FileUpload', () => {
       writable: false,
     });
 
-    fireEvent.change(input);
+    act(() => {
+      fireEvent.change(input);
+    });
 
-    expect(alertSpy).toHaveBeenCalledWith('DBCファイルを選択してください');
-
-    alertSpy.mockRestore();
+    await waitFor(() => {
+      expect(screen.getByText('エラーが発生しました')).toBeInTheDocument();
+    });
   });
 
   it('パース成功時に結果が表示される', async () => {
@@ -145,7 +169,9 @@ describe('FileUpload', () => {
       writable: false,
     });
 
-    fireEvent.change(input);
+    act(() => {
+      fireEvent.change(input);
+    });
 
     await waitFor(() => {
       expect(screen.getByText('成功')).toBeInTheDocument();
@@ -185,13 +211,15 @@ describe('FileUpload', () => {
       writable: false,
     });
 
-    fireEvent.change(input);
+    act(() => {
+      fireEvent.change(input);
+    });
 
     await waitFor(() => {
       expect(screen.getByText('エラーあり')).toBeInTheDocument();
     });
 
-    expect(screen.getByText('エラー')).toBeInTheDocument();
+    expect(screen.getByText('エラーが発生しました')).toBeInTheDocument();
   });
 
   it('ファイル読み込み中はローディング状態を表示する', async () => {
@@ -227,7 +255,9 @@ describe('FileUpload', () => {
       writable: false,
     });
 
-    fireEvent.change(input);
+    act(() => {
+      fireEvent.change(input);
+    });
 
     // 非同期ファイル操作のため、ローディング状態は一瞬で消える可能性がある
     // ファイルが選択されたことを確認
@@ -250,7 +280,9 @@ describe('FileUpload', () => {
       writable: false,
     });
 
-    fireEvent.change(input);
+    act(() => {
+      fireEvent.change(input);
+    });
 
     expect(mockDBCParser.parse).not.toHaveBeenCalled();
   });
