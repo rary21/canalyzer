@@ -5,14 +5,35 @@
  * 固定のCANフレームを定期的に送信するシンプルなクライアント
  */
 
-const WebSocket = require('ws');
+import WebSocket from 'ws';
 
 // 接続設定
 const WS_URL = 'ws://localhost:3000/ws';
 const SEND_INTERVAL = 1000; // 1秒間隔
 
+// CANフレーム型定義
+interface CANFrame {
+  id: number;
+  data: Uint8Array;
+  extended: boolean;
+  dlc: number;
+  timestamp?: number;
+}
+
+// WebSocketメッセージ型定義
+interface WebSocketMessage {
+  type: string;
+  frame?: CANFrame;
+}
+
+interface WebSocketResponse {
+  type: string;
+  data?: any;
+  error?: string;
+}
+
 // 送信するサンプルCANフレーム
-const SAMPLE_FRAMES = [
+const SAMPLE_FRAMES: CANFrame[] = [
   {
     id: 170,
     data: new Uint8Array([0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08]),
@@ -28,14 +49,16 @@ const SAMPLE_FRAMES = [
 ];
 
 class CANSender {
-  constructor(url) {
+  private url: string;
+  private ws: WebSocket | null = null;
+  private sendInterval: NodeJS.Timeout | null = null;
+  private frameIndex: number = 0;
+
+  constructor(url: string) {
     this.url = url;
-    this.ws = null;
-    this.sendInterval = null;
-    this.frameIndex = 0;
   }
 
-  connect() {
+  connect(): void {
     console.log(`WebSocketに接続中: ${this.url}`);
 
     this.ws = new WebSocket(this.url);
@@ -45,9 +68,9 @@ class CANSender {
       this.startSending();
     });
 
-    this.ws.on('message', (data) => {
+    this.ws.on('message', (data: WebSocket.Data) => {
       try {
-        const response = JSON.parse(data.toString());
+        const response: WebSocketResponse = JSON.parse(data.toString());
         console.log(
           '← 受信:',
           response.type,
@@ -63,12 +86,12 @@ class CANSender {
       this.stopSending();
     });
 
-    this.ws.on('error', (error) => {
+    this.ws.on('error', (error: Error) => {
       console.error('✗ WebSocketエラー:', error.message);
     });
   }
 
-  startSending() {
+  private startSending(): void {
     console.log(`CANフレーム送信を開始 (${SEND_INTERVAL}ms間隔)`);
 
     this.sendInterval = setInterval(() => {
@@ -76,7 +99,7 @@ class CANSender {
     }, SEND_INTERVAL);
   }
 
-  stopSending() {
+  private stopSending(): void {
     if (this.sendInterval) {
       clearInterval(this.sendInterval);
       this.sendInterval = null;
@@ -84,7 +107,7 @@ class CANSender {
     }
   }
 
-  sendNextFrame() {
+  private sendNextFrame(): void {
     if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
       console.log('⚠ WebSocket未接続のため送信をスキップ');
       return;
@@ -95,13 +118,13 @@ class CANSender {
     this.frameIndex = (this.frameIndex + 1) % SAMPLE_FRAMES.length;
 
     // タイムスタンプを追加
-    const frameWithTimestamp = {
+    const frameWithTimestamp: CANFrame = {
       ...frame,
       timestamp: Date.now(),
     };
 
     // WebSocketメッセージとして送信
-    const message = {
+    const message: WebSocketMessage = {
       type: 'send_frame',
       frame: frameWithTimestamp,
     };
@@ -109,18 +132,19 @@ class CANSender {
     try {
       this.ws.send(JSON.stringify(message));
       console.log(
-        `→ 送信: ID=0x${frame.id.toString(16).toUpperCase().padStart(3, '0')}, データ=[${Array.from(
-          frame.data
-        )
+        `→ 送信: ID=0x${frame.id
+          .toString(16)
+          .toUpperCase()
+          .padStart(3, '0')}, データ=[${Array.from(frame.data)
           .map((b) => '0x' + b.toString(16).toUpperCase().padStart(2, '0'))
           .join(', ')}], DLC=${frame.dlc}`
       );
     } catch (error) {
-      console.error('✗ 送信エラー:', error.message);
+      console.error('✗ 送信エラー:', (error as Error).message);
     }
   }
 
-  disconnect() {
+  disconnect(): void {
     this.stopSending();
     if (this.ws) {
       this.ws.close();
@@ -130,7 +154,7 @@ class CANSender {
 }
 
 // メイン実行
-function main() {
+function main(): void {
   console.log('=== WebSocket CAN送信サンプル ===\n');
 
   const sender = new CANSender(WS_URL);
@@ -151,4 +175,4 @@ if (require.main === module) {
   main();
 }
 
-module.exports = { CANSender };
+export { CANSender };
