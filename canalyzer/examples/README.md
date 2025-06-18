@@ -17,7 +17,7 @@
 2. **送信サンプルを実行**
    ```bash
    cd examples
-   node websocket-can-sender.js
+   npx tsx websocket-can-sender.ts
    ```
 
 ### 送信されるCANフレーム
