@@ -6,10 +6,12 @@ import React, {
   useState,
   useCallback,
   useEffect,
+  useRef,
 } from 'react';
 import { CANFrame } from '@/types/can';
 import { useWebSocket } from '@/hooks/useWebSocket';
 import { RealtimeDataContextType, RealtimeStats } from '@/types/websocket';
+import { throttleWithCancel } from '@/lib/throttle';
 
 const RealtimeDataContext = createContext<RealtimeDataContextType | null>(null);
 
@@ -18,6 +20,8 @@ interface RealtimeDataProviderProps {
 }
 
 const MAX_HISTORICAL_POINTS = 1000; // メッセージIDごとの最大履歴保持数
+const STATS_UPDATE_INTERVAL = 100; // 統計情報の更新間隔（ms）
+const DATA_UPDATE_INTERVAL = 50; // データ更新のスロットル間隔（ms）
 
 export function RealtimeDataProvider({ children }: RealtimeDataProviderProps) {
   // WebSocket接続
@@ -50,55 +54,106 @@ export function RealtimeDataProvider({ children }: RealtimeDataProviderProps) {
     dataPoints: {},
   });
 
+  // バッファリング用のrefs
+  const frameBufferRef = useRef<Map<number, CANFrame>>(new Map());
+  const throttledUpdateRef = useRef<ReturnType<
+    typeof throttleWithCancel
+  > | null>(null);
+  const throttledStatsUpdateRef = useRef<ReturnType<
+    typeof throttleWithCancel
+  > | null>(null);
+
+  // スロットルされたデータ更新処理
+  const updateDataThrottled = useCallback(() => {
+    const bufferedFrames = frameBufferRef.current;
+    if (bufferedFrames.size === 0) return;
+
+    // 現在のデータを一括更新
+    setCurrentData((prev) => {
+      const newMap = new Map(prev);
+      bufferedFrames.forEach((frame, messageId) => {
+        newMap.set(messageId, frame);
+      });
+      return newMap;
+    });
+
+    // 履歴データを一括更新
+    setHistoricalData((prev) => {
+      const newMap = new Map(prev);
+      bufferedFrames.forEach((frame, messageId) => {
+        const existing = newMap.get(messageId) || [];
+        const updated = [...existing, frame];
+        const trimmed =
+          updated.length > MAX_HISTORICAL_POINTS
+            ? updated.slice(-MAX_HISTORICAL_POINTS)
+            : updated;
+        newMap.set(messageId, trimmed);
+      });
+      return newMap;
+    });
+
+    // バッファをクリア
+    frameBufferRef.current = new Map();
+  }, []);
+
+  // スロットルされた統計情報更新処理
+  const updateStatsThrottled = useCallback((...args: unknown[]) => {
+    const frameCount = args[0] as number;
+    const timestamp = Date.now();
+    setStats((prev) => {
+      const totalFrames = prev.totalFrames + frameCount;
+      const timeDiff = (timestamp - prev.lastUpdate) / 1000;
+      const framesPerSecond =
+        timeDiff > 0 ? Math.round(frameCount / timeDiff) : 0;
+
+      return {
+        ...prev,
+        totalFrames,
+        framesPerSecond,
+        lastUpdate: timestamp,
+      };
+    });
+  }, []);
+
+  // スロットル関数の初期化
+  useEffect(() => {
+    throttledUpdateRef.current = throttleWithCancel(
+      updateDataThrottled,
+      DATA_UPDATE_INTERVAL
+    );
+    throttledStatsUpdateRef.current = throttleWithCancel(
+      updateStatsThrottled,
+      STATS_UPDATE_INTERVAL
+    );
+
+    return () => {
+      throttledUpdateRef.current?.cancel();
+      throttledStatsUpdateRef.current?.cancel();
+    };
+  }, [updateDataThrottled, updateStatsThrottled]);
+
   // フレーム受信時の処理
   useEffect(() => {
     if (!lastFrame) return;
 
     const messageId = lastFrame.id;
-    const timestamp = Date.now();
 
-    // 現在のデータを更新
-    setCurrentData((prev) => {
-      const newMap = new Map(prev);
-      newMap.set(messageId, lastFrame);
-      return newMap;
-    });
+    // バッファに追加
+    frameBufferRef.current.set(messageId, lastFrame);
 
-    // 履歴データを更新
-    setHistoricalData((prev) => {
-      const newMap = new Map(prev);
-      const existing = newMap.get(messageId) || [];
-      const updated = [...existing, lastFrame];
+    // スロットルされた更新を実行
+    throttledUpdateRef.current?.throttled();
+    throttledStatsUpdateRef.current?.throttled(1);
 
-      // 最大履歴数を超える場合は古いデータを削除
-      const trimmed =
-        updated.length > MAX_HISTORICAL_POINTS
-          ? updated.slice(-MAX_HISTORICAL_POINTS)
-          : updated;
-
-      newMap.set(messageId, trimmed);
-      return newMap;
-    });
-
-    // 統計情報を更新
+    // データポイントの更新（スロットルなし）
     setStats((prev) => {
       const newDataPoints = { ...prev.dataPoints };
       newDataPoints[messageId] = (newDataPoints[messageId] || 0) + 1;
-
-      const totalFrames = prev.totalFrames + 1;
       const uniqueMessages = Object.keys(newDataPoints).length;
 
-      // FPS計算（直近1秒間のフレーム数）
-      const now = timestamp;
-      const timeDiff = (now - prev.lastUpdate) / 1000;
-      const framesPerSecond = timeDiff > 0 ? Math.round(1 / timeDiff) : 0;
-
       return {
-        totalFrames,
-        framesPerSecond,
+        ...prev,
         uniqueMessages,
-        connectionUptime: prev.connectionUptime,
-        lastUpdate: now,
         dataPoints: newDataPoints,
       };
     });
@@ -147,7 +202,12 @@ export function RealtimeDataProvider({ children }: RealtimeDataProviderProps) {
     stopStreaming();
     setIsStreaming(false);
     setPendingStart(false); // 待機フラグもリセット
-  }, [stopStreaming]);
+
+    // スロットルされた更新を即座に実行
+    if (frameBufferRef.current.size > 0) {
+      updateDataThrottled();
+    }
+  }, [stopStreaming, updateDataThrottled]);
 
   const contextValue: RealtimeDataContextType = {
     // 接続状態

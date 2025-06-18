@@ -1,15 +1,29 @@
 import { CANFrame } from '@/types/can';
 
-// WebSocketメッセージの型定義
-export interface WebSocketMessage {
-  type: 'subscribe' | 'unsubscribe' | 'start' | 'stop' | 'heartbeat';
+// WebSocketメッセージの基本型
+export type WebSocketMessageType =
+  | 'subscribe'
+  | 'unsubscribe'
+  | 'start'
+  | 'stop'
+  | 'heartbeat';
+
+// WebSocketメッセージの型定義（ジェネリクス対応）
+export interface WebSocketMessage<T = WebSocketMessageType> {
+  type: T;
   messageIds?: number[];
+  payload?: Record<string, unknown>;
 }
 
-export interface WebSocketResponse {
-  type: 'frame' | 'status' | 'error' | 'heartbeat';
-  data?: WebSocketResponseData;
+// WebSocketレスポンスの基本型
+export type WebSocketResponseType = 'frame' | 'status' | 'error' | 'heartbeat';
+
+// WebSocketレスポンスの型定義（ジェネリクス対応）
+export interface WebSocketResponse<T = WebSocketResponseData> {
+  type: WebSocketResponseType;
+  data?: T;
   error?: string;
+  timestamp?: number;
 }
 
 export interface WebSocketResponseData {
@@ -32,6 +46,7 @@ export interface WebSocketConfig {
   reconnectInterval: number;
   maxReconnectAttempts: number;
   heartbeatInterval: number;
+  connectionTimeout?: number;
 }
 
 // WebSocketフックの戻り値
@@ -43,6 +58,9 @@ export interface WebSocketHookReturn {
   // データ
   lastFrame: CANFrame | null;
   frames: CANFrame[];
+
+  // エラー
+  error: Error | null;
 
   // 制御関数
   connect: () => void;
@@ -58,8 +76,15 @@ export interface WebSocketHookReturn {
     reconnectAttempts: number;
     lastHeartbeat: number | null;
     bytesReceived: number;
+    lastError: string | null;
+    lastErrorTime: number | null;
   };
 }
+
+// データマップのジェネリクス型
+export type DataMap<K, V> = Map<K, V>;
+export type FrameDataMap = DataMap<number, CANFrame>;
+export type HistoricalDataMap = DataMap<number, CANFrame[]>;
 
 // リアルタイムデータコンテキストの型
 export interface RealtimeDataContextType {
@@ -69,8 +94,8 @@ export interface RealtimeDataContextType {
   status: WebSocketStatus;
 
   // データ
-  currentData: Map<number, CANFrame>;
-  historicalData: Map<number, CANFrame[]>;
+  currentData: FrameDataMap;
+  historicalData: HistoricalDataMap;
 
   // 制御関数
   startRealtime: () => void;
@@ -82,11 +107,26 @@ export interface RealtimeDataContextType {
   stats: RealtimeStats;
 }
 
+// 統計情報のジェネリクス型
 export interface RealtimeStats {
   totalFrames: number;
   framesPerSecond: number;
   uniqueMessages: number;
   connectionUptime: number;
   lastUpdate: number;
-  dataPoints: { [messageId: number]: number };
+  dataPoints: Record<number, number>;
+}
+
+// WebSocketイベントの型定義
+export interface WebSocketEvent<T = Record<string, unknown>> {
+  type: string;
+  data: T;
+  timestamp: number;
+}
+
+// WebSocketエラーの型定義
+export interface WebSocketError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
 }

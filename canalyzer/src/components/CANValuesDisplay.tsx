@@ -1,7 +1,14 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React from 'react';
 import { CANValue } from '@/types/can';
+import CANValueRow from './CANValueRow';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
+import SortIcon from '@/components/common/SortIcon';
+import { usePagination } from '@/hooks/usePagination';
+import { useSort } from '@/hooks/useSort';
+import { useFilter } from '@/hooks/useFilter';
+import { formatTimestamp, formatNumber } from '@/utils/formatters';
 
 interface CANValuesDisplayProps {
   values: CANValue[];
@@ -14,150 +21,57 @@ type SortField =
   | 'timestamp'
   | 'physicalValue'
   | 'rawValue';
-type SortDirection = 'asc' | 'desc';
 
 export default function CANValuesDisplay({
   values,
   isLoading = false,
 }: CANValuesDisplayProps) {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [sortField, setSortField] = useState<SortField>('timestamp');
-  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 50;
+  // カスタムフックを使用してフィルタリング
+  const { filteredData, searchQuery, setSearchQuery } = useFilter<CANValue>({
+    data: values,
+    searchFields: ['signalName', 'messageName', 'unit', 'description'],
+  });
 
-  // フィルタリングとソート
-  const filteredAndSortedValues = useMemo(() => {
-    let filtered = values;
-
-    // 検索フィルター
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        (value) =>
-          value.signalName.toLowerCase().includes(query) ||
-          value.messageName.toLowerCase().includes(query) ||
-          value.unit.toLowerCase().includes(query) ||
-          (value.description && value.description.toLowerCase().includes(query))
-      );
-    }
-
-    // ソート
-    const sorted = [...filtered].sort((a, b) => {
-      let valueA: string | number = a[sortField];
-      let valueB: string | number = b[sortField];
-
-      // 文字列の場合は小文字で比較
-      if (typeof valueA === 'string' && typeof valueB === 'string') {
-        valueA = valueA.toLowerCase();
-        valueB = valueB.toLowerCase();
-      }
-
-      if (valueA < valueB) return sortDirection === 'asc' ? -1 : 1;
-      if (valueA > valueB) return sortDirection === 'asc' ? 1 : -1;
-      return 0;
+  // カスタムフックを使用してソート
+  const { sortedData, sortField, sortDirection, toggleSort } =
+    useSort<CANValue>({
+      data: filteredData,
+      initialSortField: 'timestamp',
+      initialSortDirection: 'desc',
     });
 
-    return sorted;
-  }, [values, searchQuery, sortField, sortDirection]);
+  // カスタムフックを使用してページネーション
+  const {
+    paginatedData,
+    currentPage,
+    totalPages,
+    setPage,
+    nextPage,
+    previousPage,
+    startIndex,
+    endIndex,
+  } = usePagination<CANValue>({
+    data: sortedData,
+    itemsPerPage: 50,
+  });
 
-  // ページネーション
-  const totalPages = Math.ceil(filteredAndSortedValues.length / itemsPerPage);
-  const paginatedValues = filteredAndSortedValues.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
-
-  // ソート処理
+  // ソート処理（ページリセット付き）
   const handleSort = (field: SortField) => {
-    if (sortField === field) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortField(field);
-      setSortDirection('asc');
-    }
-    setCurrentPage(1);
+    toggleSort(field);
+    setPage(1);
   };
 
-  // ソートアイコン
-  const getSortIcon = (field: SortField) => {
-    if (sortField !== field) {
-      return (
-        <svg
-          className="w-4 h-4 text-gray-400"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"
-          />
-        </svg>
-      );
-    }
-
-    return sortDirection === 'asc' ? (
-      <svg
-        className="w-4 h-4 text-blue-500"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M5 15l7-7 7 7"
-        />
-      </svg>
-    ) : (
-      <svg
-        className="w-4 h-4 text-blue-500"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M19 9l-7 7-7-7"
-        />
-      </svg>
-    );
-  };
-
-  // タイムスタンプのフォーマット
-  const formatTimestamp = (timestamp: number) => {
-    return new Date(timestamp).toLocaleString('ja-JP', {
-      hour12: false,
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      fractionalSecondDigits: 3,
-    });
-  };
-
-  // 数値のフォーマット
-  const formatValue = (value: number, decimals: number = 3) => {
-    if (Number.isInteger(value)) {
-      return value.toString();
-    }
-    return value.toFixed(decimals);
+  // 検索時のページリセット
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+    setPage(1);
   };
 
   if (isLoading) {
     return (
       <div className="bg-white rounded-lg shadow-sm border">
-        <div className="p-6 text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">CANデータを解析中...</p>
+        <div className="p-6">
+          <LoadingSpinner message="CANデータを解析中..." />
         </div>
       </div>
     );
@@ -196,7 +110,7 @@ export default function CANValuesDisplay({
           <div>
             <h2 className="text-xl font-semibold text-gray-900">CAN信号値</h2>
             <p className="text-sm text-gray-600 mt-1">
-              {filteredAndSortedValues.length} / {values.length} 件のシグナル値
+              {sortedData.length} / {values.length} 件のシグナル値
             </p>
           </div>
 
@@ -221,10 +135,7 @@ export default function CANValuesDisplay({
               type="text"
               placeholder="シグナル名、メッセージ名、単位、説明で検索..."
               value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                setCurrentPage(1);
-              }}
+              onChange={handleSearchChange}
               className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full sm:w-80"
             />
           </div>
@@ -243,7 +154,11 @@ export default function CANValuesDisplay({
               >
                 <div className="flex items-center space-x-1">
                   <span>メッセージ名</span>
-                  {getSortIcon('messageName')}
+                  <SortIcon
+                    sortField={sortField as string}
+                    field="messageName"
+                    sortDirection={sortDirection}
+                  />
                 </div>
               </th>
               <th
@@ -253,7 +168,11 @@ export default function CANValuesDisplay({
               >
                 <div className="flex items-center space-x-1">
                   <span>シグナル名</span>
-                  {getSortIcon('signalName')}
+                  <SortIcon
+                    sortField={sortField as string}
+                    field="signalName"
+                    sortDirection={sortDirection}
+                  />
                 </div>
               </th>
               <th
@@ -263,7 +182,11 @@ export default function CANValuesDisplay({
               >
                 <div className="flex items-center space-x-1">
                   <span>物理値</span>
-                  {getSortIcon('physicalValue')}
+                  <SortIcon
+                    sortField={sortField as string}
+                    field="physicalValue"
+                    sortDirection={sortDirection}
+                  />
                 </div>
               </th>
               <th
@@ -273,7 +196,11 @@ export default function CANValuesDisplay({
               >
                 <div className="flex items-center space-x-1">
                   <span>生値</span>
-                  {getSortIcon('rawValue')}
+                  <SortIcon
+                    sortField={sortField as string}
+                    field="rawValue"
+                    sortDirection={sortDirection}
+                  />
                 </div>
               </th>
               <th
@@ -289,7 +216,11 @@ export default function CANValuesDisplay({
               >
                 <div className="flex items-center space-x-1">
                   <span>タイムスタンプ</span>
-                  {getSortIcon('timestamp')}
+                  <SortIcon
+                    sortField={sortField as string}
+                    field="timestamp"
+                    sortDirection={sortDirection}
+                  />
                 </div>
               </th>
               <th
@@ -301,39 +232,13 @@ export default function CANValuesDisplay({
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {paginatedValues.map((value, index) => (
-              <tr
+            {paginatedData.map((value, index) => (
+              <CANValueRow
                 key={`${value.signalName}-${value.timestamp}-${index}`}
-                className="hover:bg-gray-50"
-              >
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  {value.messageName}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  {value.signalName}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  <span className="font-mono">
-                    {formatValue(value.physicalValue)}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  <span className="font-mono">
-                    {formatValue(value.rawValue, 0)}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {value.unit || '-'}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  <span className="font-mono text-xs">
-                    {formatTimestamp(value.timestamp)}
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-sm text-gray-500">
-                  {value.description || '-'}
-                </td>
-              </tr>
+                value={value}
+                formatTimestamp={formatTimestamp}
+                formatValue={formatNumber}
+              />
             ))}
           </tbody>
         </table>
@@ -344,16 +249,14 @@ export default function CANValuesDisplay({
         <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
           <div className="flex-1 flex justify-between sm:hidden">
             <button
-              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+              onClick={previousPage}
               disabled={currentPage === 1}
               className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               前へ
             </button>
             <button
-              onClick={() =>
-                setCurrentPage(Math.min(totalPages, currentPage + 1))
-              }
+              onClick={nextPage}
               disabled={currentPage === totalPages}
               className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
@@ -363,16 +266,7 @@ export default function CANValuesDisplay({
           <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
             <div>
               <p className="text-sm text-gray-700">
-                {Math.min(
-                  (currentPage - 1) * itemsPerPage + 1,
-                  filteredAndSortedValues.length
-                )}{' '}
-                -{' '}
-                {Math.min(
-                  currentPage * itemsPerPage,
-                  filteredAndSortedValues.length
-                )}{' '}
-                / {filteredAndSortedValues.length} 件
+                {startIndex} - {endIndex} / {sortedData.length} 件
               </p>
             </div>
             <div>
@@ -381,7 +275,7 @@ export default function CANValuesDisplay({
                 aria-label="Pagination"
               >
                 <button
-                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                  onClick={previousPage}
                   disabled={currentPage === 1}
                   className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
@@ -402,9 +296,7 @@ export default function CANValuesDisplay({
                   {currentPage} / {totalPages}
                 </span>
                 <button
-                  onClick={() =>
-                    setCurrentPage(Math.min(totalPages, currentPage + 1))
-                  }
+                  onClick={nextPage}
                   disabled={currentPage === totalPages}
                   className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >

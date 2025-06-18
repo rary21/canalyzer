@@ -1,34 +1,33 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { DBCParser } from '@/lib/dbc-parser';
 import { ParseResult } from '@/types/dbc';
 import { useDBCContext } from '@/contexts/DBCContext';
+import { useNavigation } from '@/hooks/useNavigation';
+import {
+  InvalidFileFormatError,
+  getUserFriendlyMessage,
+  ErrorMessages,
+} from '@/utils/errors';
 
 export default function FileUpload() {
-  const router = useRouter();
   const [fileName, setFileName] = useState<string>('');
   const [parseResult, setParseResult] = useState<ParseResult | null>(null);
   const [loading, setLoading] = useState(false);
-  const [autoNavigate, setAutoNavigate] = useState(true);
-  const [isNavigating, setIsNavigating] = useState(false);
-  const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
   const {
     setDBCData,
     setParseResult: setContextParseResult,
     setFileName: setContextFileName,
   } = useDBCContext();
-
-  // クリーンアップ処理
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
-  }, []);
+  const {
+    autoNavigate,
+    setAutoNavigate,
+    isNavigating,
+    navigateWithDelay,
+    resetNavigation,
+  } = useNavigation();
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -36,17 +35,44 @@ export default function FileUpload() {
 
     // DBCファイルかチェック
     if (!file.name.toLowerCase().endsWith('.dbc')) {
-      alert('DBCファイルを選択してください');
+      const error = new InvalidFileFormatError(
+        'DBC',
+        file.name.split('.').pop(),
+        file.name
+      );
+      setParseResult({
+        success: false,
+        errors: [
+          {
+            line: 0,
+            message: getUserFriendlyMessage(error),
+            type: 'FILE_FORMAT_ERROR',
+          },
+        ],
+        warnings: [],
+      });
       return;
     }
 
-    // 前回のタイムアウトをクリア
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
+    // ファイルサイズチェック（10MB以下）
+    const maxFileSize = 10 * 1024 * 1024; // 10MB
+    if (file.size > maxFileSize) {
+      setParseResult({
+        success: false,
+        errors: [
+          {
+            line: 0,
+            message: ErrorMessages.FILE_TOO_LARGE,
+            type: 'FILE_SIZE_ERROR',
+          },
+        ],
+        warnings: [],
+      });
+      return;
     }
 
-    // 状態をリセット
-    setIsNavigating(false);
+    // ナビゲーション状態をリセット
+    resetNavigation();
     setFileName(file.name);
     setLoading(true);
 
@@ -67,17 +93,30 @@ export default function FileUpload() {
 
         // 自動遷移が有効な場合、グラフページへ遷移
         if (autoNavigate) {
-          setIsNavigating(true);
-          timeoutRef.current = setTimeout(() => {
-            router.push('/graph');
-          }, 1500);
+          navigateWithDelay('/graph');
         }
       }
 
       console.log('パース結果:', result);
     } catch (error) {
       console.error('ファイル読み込みエラー:', error);
-      alert('ファイルの読み込みに失敗しました');
+
+      let errorMessage: string = ErrorMessages.FILE_READ_ERROR;
+      if (error instanceof Error) {
+        errorMessage = getUserFriendlyMessage(error);
+      }
+
+      setParseResult({
+        success: false,
+        errors: [
+          {
+            line: 0,
+            message: errorMessage,
+            type: 'FILE_READ_ERROR',
+          },
+        ],
+        warnings: [],
+      });
     } finally {
       setLoading(false);
     }
@@ -227,14 +266,36 @@ export default function FileUpload() {
 
           {parseResult.errors.length > 0 && (
             <div className="p-4 bg-red-50 rounded-lg">
-              <h3 className="font-semibold mb-2 text-red-800">エラー</h3>
-              <ul className="text-sm space-y-1">
-                {parseResult.errors.map((error, index) => (
-                  <li key={index} className="text-red-600">
-                    行 {error.line}: {error.message}
-                  </li>
-                ))}
-              </ul>
+              <div className="flex items-start">
+                <div className="flex-shrink-0">
+                  <svg
+                    className="h-5 w-5 text-red-400"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-red-800">
+                    エラーが発生しました
+                  </h3>
+                  <div className="mt-2 text-sm text-red-700">
+                    <ul className="list-disc pl-5 space-y-1">
+                      {parseResult.errors.map((error, index) => (
+                        <li key={index}>
+                          {error.line > 0 ? `行 ${error.line}: ` : ''}
+                          {error.message}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
         </div>

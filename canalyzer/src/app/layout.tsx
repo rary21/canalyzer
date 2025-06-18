@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import { DBCProvider } from '@/contexts/DBCContext';
 import { RealtimeDataProvider } from '@/contexts/RealtimeDataContext';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -20,9 +21,11 @@ export default function RootLayout({
   return (
     <html lang="ja">
       <body className={inter.className}>
-        <DBCProvider>
-          <RealtimeDataProvider>{children}</RealtimeDataProvider>
-        </DBCProvider>
+        <ErrorBoundary>
+          <DBCProvider>
+            <RealtimeDataProvider>{children}</RealtimeDataProvider>
+          </DBCProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );

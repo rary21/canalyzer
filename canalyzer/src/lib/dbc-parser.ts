@@ -1,13 +1,18 @@
 import { Dbc } from '@montra-connect/dbc-parser';
 import {
   DBCDatabase,
-  CANMessage,
   CANSignal,
   CANNode,
   ParseResult,
   ParseError,
   ParseWarning,
+  DbcDataType,
+  DbcMessage,
+  DbcSignal,
+  ValueTable,
+  MessageMap,
 } from '@/types/dbc';
+import { ErrorMessages } from '@/utils/errors';
 
 export class DBCParser {
   private dbc: Dbc;
@@ -24,7 +29,21 @@ export class DBCParser {
     if (content === null || content === undefined) {
       errors.push({
         line: 0,
-        message: '入力が無効です',
+        message: ErrorMessages.FILE_EMPTY,
+        type: 'SYNTAX_ERROR',
+      });
+      return {
+        success: false,
+        errors,
+        warnings,
+      };
+    }
+
+    // 空ファイルのチェック
+    if (content.trim() === '') {
+      errors.push({
+        line: 0,
+        message: ErrorMessages.FILE_EMPTY,
         type: 'SYNTAX_ERROR',
       });
       return {
@@ -36,7 +55,7 @@ export class DBCParser {
 
     try {
       // DBCファイルをロード
-      const dbcData = this.dbc.load(content);
+      const dbcData = this.dbc.load(content) as unknown as DbcDataType;
 
       // データベースオブジェクトを構築
       const database: DBCDatabase = {
@@ -52,13 +71,39 @@ export class DBCParser {
         warnings,
       };
     } catch (error) {
+      // エラーメッセージの解析
+      let errorMessage: string = ErrorMessages.DBC_INVALID_SYNTAX;
+      let errorLine = 0;
+
+      if (error instanceof Error) {
+        errorMessage = error.message;
+
+        // エラーメッセージから行番号を抽出
+        const lineMatch = error.message.match(/line (\d+)/i);
+        if (lineMatch) {
+          errorLine = parseInt(lineMatch[1], 10);
+        }
+
+        // 特定のエラーパターンをチェック
+        if (error.message.includes('VERSION')) {
+          errorMessage = ErrorMessages.DBC_MISSING_VERSION;
+        } else if (
+          error.message.includes('BO_') ||
+          error.message.includes('message')
+        ) {
+          errorMessage = `${ErrorMessages.DBC_INVALID_MESSAGE}: ${error.message}`;
+        } else if (
+          error.message.includes('SG_') ||
+          error.message.includes('signal')
+        ) {
+          errorMessage = `${ErrorMessages.DBC_INVALID_SIGNAL}: ${error.message}`;
+        }
+      }
+
       errors.push({
-        line: 0,
-        message:
-          error instanceof Error
-            ? error.message
-            : 'DBCファイルのパースに失敗しました',
-        type: 'SYNTAX_ERROR',
+        line: errorLine,
+        message: errorMessage,
+        type: 'SYNTAX_ERROR' as const,
       });
 
       return {
@@ -69,52 +114,52 @@ export class DBCParser {
     }
   }
 
-  private extractNodes(dbcData: unknown): CANNode[] {
+  private extractNodes(dbcData: DbcDataType): CANNode[] {
     const nodes: CANNode[] = [];
-
-    // 型ガード
-    if (!this.isDbcData(dbcData)) {
-      return nodes;
-    }
 
     // dbcDataからノード情報を抽出
     if (Array.isArray(dbcData.nodes)) {
       for (const nodeName of dbcData.nodes) {
-        nodes.push({
-          name: nodeName,
-          comment: undefined,
-        });
+        if (typeof nodeName === 'string') {
+          nodes.push({
+            name: nodeName,
+            comment: undefined,
+          });
+        }
       }
     }
 
     return nodes;
   }
 
-  private extractMessages(dbcData: unknown): Map<number, CANMessage> {
-    const messages = new Map<number, CANMessage>();
-
-    // 型ガード
-    if (!this.isDbcData(dbcData)) {
-      return messages;
-    }
+  private extractMessages(dbcData: DbcDataType): MessageMap {
+    const messages: MessageMap = new Map();
 
     // dbcDataからメッセージ情報を抽出
     if (dbcData.messages && dbcData.messages instanceof Map) {
       for (const [messageName, dbcMessage] of dbcData.messages) {
-        const messageData = dbcMessage as DbcMessage;
+        if (!this.isDbcMessage(dbcMessage)) {
+          continue;
+        }
+        const messageData = dbcMessage;
         const signals: CANSignal[] = [];
 
         // シグナル情報を抽出
         if (messageData.signals && messageData.signals instanceof Map) {
           for (const [signalName, dbcSignal] of messageData.signals) {
-            const signalData = dbcSignal as DbcSignal;
+            if (!this.isDbcSignal(dbcSignal)) {
+              continue;
+            }
+            const signalData = dbcSignal;
 
             // 値テーブルをオブジェクトに変換
-            let values: Record<number, string> | undefined;
+            let values: ValueTable | undefined;
             if (signalData.valueTable && signalData.valueTable instanceof Map) {
               values = {};
               for (const [key, value] of signalData.valueTable) {
-                values[key] = value;
+                if (typeof key === 'number' && typeof value === 'string') {
+                  values[key] = value;
+                }
               }
             }
 
@@ -122,7 +167,8 @@ export class DBCParser {
               name: signalName,
               startBit: signalData.startBit,
               length: signalData.length,
-              endianness: signalData.endian === 'Intel' ? 'little' : 'big',
+              endianness:
+                signalData.endian === 'Intel' ? 'little' : ('big' as const),
               signed: signalData.signed,
               factor: signalData.factor,
               offset: signalData.offset,
@@ -138,7 +184,8 @@ export class DBCParser {
 
         messages.set(messageData.id, {
           id: messageData.id,
-          name: messageName,
+          name:
+            typeof messageName === 'string' ? messageName : String(messageName),
           length: messageData.dlc,
           sendingNode: messageData.sendingNode || '',
           signals,
@@ -153,34 +200,34 @@ export class DBCParser {
   private isDbcData(data: unknown): data is DbcDataType {
     return typeof data === 'object' && data !== null;
   }
-}
 
-// 型定義を追加
-interface DbcDataType {
-  version?: string;
-  nodes?: Map<string, unknown>;
-  messages?: Map<string, unknown>;
-}
+  private isDbcMessage(data: unknown): data is DbcMessage {
+    if (typeof data !== 'object' || data === null) {
+      return false;
+    }
+    const msg = data as Record<string, unknown>;
+    return (
+      typeof msg.id === 'number' &&
+      typeof msg.dlc === 'number' &&
+      msg.dlc >= 0 &&
+      msg.dlc <= 8
+    );
+  }
 
-interface DbcMessage {
-  id: number;
-  dlc: number;
-  sendingNode?: string;
-  description?: string;
-  signals?: Map<string, unknown>;
-}
-
-interface DbcSignal {
-  startBit: number;
-  length: number;
-  endian: string;
-  signed: boolean;
-  factor: number;
-  offset: number;
-  min: number;
-  max: number;
-  unit?: string;
-  receivingNodes?: string[];
-  valueTable?: Map<number, string>;
-  description?: string;
+  private isDbcSignal(data: unknown): data is DbcSignal {
+    if (typeof data !== 'object' || data === null) {
+      return false;
+    }
+    const sig = data as Record<string, unknown>;
+    return (
+      typeof sig.startBit === 'number' &&
+      typeof sig.length === 'number' &&
+      (sig.endian === 'Intel' || sig.endian === 'Motorola') &&
+      typeof sig.signed === 'boolean' &&
+      typeof sig.factor === 'number' &&
+      typeof sig.offset === 'number' &&
+      typeof sig.min === 'number' &&
+      typeof sig.max === 'number'
+    );
+  }
 }

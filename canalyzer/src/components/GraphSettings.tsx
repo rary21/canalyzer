@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import {
   GraphConfig,
   TIME_RANGE_PRESETS,
   UPDATE_INTERVAL_PRESETS,
 } from '@/types/graph';
+import { useGraphSettings } from '@/hooks/useGraphSettings';
 
 interface GraphSettingsProps {
   /** 現在のグラフ設定 */
@@ -18,18 +19,26 @@ interface GraphSettingsProps {
   onRealTimeToggle: (enabled: boolean) => void;
 }
 
+/**
+ * グラフ設定のプレゼンテーショナルコンポーネント
+ */
 export default function GraphSettings({
   config,
   onConfigChange,
   realTimeEnabled,
   onRealTimeToggle,
 }: GraphSettingsProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
-
-  // 設定値を更新するヘルパー関数
-  const updateConfig = (updates: Partial<GraphConfig>) => {
-    onConfigChange({ ...config, ...updates });
-  };
+  const {
+    isExpanded,
+    updateTimeRange,
+    updateUpdateInterval,
+    toggleAutoScale,
+    updateYAxisMin,
+    updateYAxisMax,
+    updateDisplayOption,
+    resetToDefaults,
+    toggleExpanded,
+  } = useGraphSettings({ config, onConfigChange });
 
   return (
     <div className="bg-white rounded-lg shadow-sm border">
@@ -43,7 +52,7 @@ export default function GraphSettings({
             </p>
           </div>
           <button
-            onClick={() => setIsExpanded(!isExpanded)}
+            onClick={toggleExpanded}
             className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
           >
             <svg
@@ -97,7 +106,7 @@ export default function GraphSettings({
             {TIME_RANGE_PRESETS.map((preset) => (
               <button
                 key={preset.value}
-                onClick={() => updateConfig({ timeRange: preset.value })}
+                onClick={() => updateTimeRange(preset.value)}
                 className={`px-3 py-2 text-sm rounded-md border transition-colors ${
                   config.timeRange === preset.value
                     ? 'bg-blue-600 text-white border-blue-600'
@@ -123,7 +132,7 @@ export default function GraphSettings({
               {UPDATE_INTERVAL_PRESETS.map((preset) => (
                 <button
                   key={preset.value}
-                  onClick={() => updateConfig({ updateInterval: preset.value })}
+                  onClick={() => updateUpdateInterval(preset.value)}
                   className={`px-3 py-2 text-sm rounded-md border transition-colors ${
                     config.updateInterval === preset.value
                       ? 'bg-blue-600 text-white border-blue-600'
@@ -148,9 +157,7 @@ export default function GraphSettings({
                 <input
                   type="checkbox"
                   checked={config.autoScale}
-                  onChange={(e) =>
-                    updateConfig({ autoScale: e.target.checked })
-                  }
+                  onChange={(e) => toggleAutoScale(e.target.checked)}
                   className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
                 />
                 <span className="ml-2 text-sm text-gray-700">自動スケール</span>
@@ -170,13 +177,7 @@ export default function GraphSettings({
                   <input
                     type="number"
                     value={config.yAxisMin || ''}
-                    onChange={(e) =>
-                      updateConfig({
-                        yAxisMin: e.target.value
-                          ? parseFloat(e.target.value)
-                          : undefined,
-                      })
-                    }
+                    onChange={(e) => updateYAxisMin(e.target.value)}
                     placeholder="自動"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
@@ -188,13 +189,7 @@ export default function GraphSettings({
                   <input
                     type="number"
                     value={config.yAxisMax || ''}
-                    onChange={(e) =>
-                      updateConfig({
-                        yAxisMax: e.target.value
-                          ? parseFloat(e.target.value)
-                          : undefined,
-                      })
-                    }
+                    onChange={(e) => updateYAxisMax(e.target.value)}
                     placeholder="自動"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
@@ -213,7 +208,9 @@ export default function GraphSettings({
                 <input
                   type="checkbox"
                   checked={config.showGrid}
-                  onChange={(e) => updateConfig({ showGrid: e.target.checked })}
+                  onChange={(e) =>
+                    updateDisplayOption('showGrid', e.target.checked)
+                  }
                   className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
                 />
                 <span className="ml-2 text-sm text-gray-700">グリッド表示</span>
@@ -224,7 +221,7 @@ export default function GraphSettings({
                   type="checkbox"
                   checked={config.showLegend}
                   onChange={(e) =>
-                    updateConfig({ showLegend: e.target.checked })
+                    updateDisplayOption('showLegend', e.target.checked)
                   }
                   className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
                 />
@@ -236,7 +233,7 @@ export default function GraphSettings({
                   type="checkbox"
                   checked={config.showTooltip}
                   onChange={(e) =>
-                    updateConfig({ showTooltip: e.target.checked })
+                    updateDisplayOption('showTooltip', e.target.checked)
                   }
                   className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
                 />
@@ -250,17 +247,7 @@ export default function GraphSettings({
           {/* リセットボタン */}
           <div className="pt-4 border-t border-gray-200">
             <button
-              onClick={() => {
-                const defaultConfig: GraphConfig = {
-                  timeRange: 10000,
-                  updateInterval: 100,
-                  autoScale: true,
-                  showGrid: true,
-                  showLegend: true,
-                  showTooltip: true,
-                };
-                onConfigChange(defaultConfig);
-              }}
+              onClick={resetToDefaults}
               className="w-full px-4 py-2 text-sm text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
             >
               設定をリセット
