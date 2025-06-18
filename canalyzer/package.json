@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "node server.js",
+    "dev": "tsx server.ts",
     "dev:next": "next dev --turbopack",
     "build": "next build",
     "start": "NODE_ENV=production node server.js",
@@ -40,6 +40,7 @@
     "prettier": "^3.4.2",
     "tailwindcss": "^4",
     "ts-node": "^10.9.2",
+    "tsx": "^4.20.3",
     "typescript": "^5"
   }
 }
