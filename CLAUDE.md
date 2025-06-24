@@ -136,30 +136,29 @@ PORT=3456 npm run dev
 ```
 
 #### 2. WebSocketサンプル送信プログラムのポート設定確認
-WebSocketサンプル送信プログラムを作成し、ポートが開発サーバーと一致していることを確認：
+WebSocketサンプル送信プログラム（`examples/websocket-can-sender.ts`）のポートが開発サーバーと一致していることを確認し、必要に応じて修正：
 ```typescript
 const WS_URL = 'ws://localhost:3456/ws';
 ```
 
 #### 3. アプリケーションでDBCファイルをアップロード
 - ブラウザでトップページ（http://localhost:3456）にアクセス
-- 「DBC編集」タブを選択
-- 「ファイルを選択」から`dbc/toyota_nodsu_pt_generated.dbc`をアップロード
+- 「DBCファイルを選択」ボタンをクリック
+- ファイル選択ダイアログから`dbc/toyota_nodsu_pt_generated.dbc`をアップロード
 
 #### 4. CAN値表示タブでリアルタイム受信を開始
 - 「CAN値表示」タブに移動
-- 「リアルタイム」ボタンをクリックして有効化（青色に変化）
-- WebSocket接続が「ストリーミング中」と表示されることを確認
+- 「リアルタイム開始」ボタンをクリック
+- 接続状態が「● 接続中」と表示されることを確認
 
 #### 5. グラフタブでシグナルを選択
 - 「グラフ表示」タブに移動
 - 左側のシグナル選択から表示したいシグナルを選択（例：WHEEL_SPEED_FL）
 
 #### 6. WebSocketサンプル送信プログラムを実行
-WebSocketサンプル送信プログラムを作成して実行：
+WebSocketサンプル送信プログラムを実行：
 ```bash
-# サンプルプログラムを作成後
-npx tsx examples/websocket-can-sender.ts
+cd examples && npx tsx websocket-can-sender.ts
 ```
 
 #### 7. グラフ表示の確認

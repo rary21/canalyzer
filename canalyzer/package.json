@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@montra-connect/dbc-parser": "^0.0.4",
+    "@playwright/test": "^1.53.1",
     "date-fns": "^4.1.0",
     "next": "15.3.3",
     "react": "^19.0.0",
