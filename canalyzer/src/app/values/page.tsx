@@ -8,7 +8,6 @@ import TabNavigation from '@/components/TabNavigation';
 import CANValuesDisplay from '@/components/CANValuesDisplay';
 import { RealtimeControl } from '@/components/RealtimeControl';
 import { CANParser } from '@/lib/can-parser';
-import { sampleDBCDatabase, sampleCANFrames } from '@/data/sample-can-data';
 import { CANValue, CANFrame } from '@/types/can';
 
 export default function ValuesPage() {
@@ -16,7 +15,6 @@ export default function ValuesPage() {
   const { currentData, isConnected, isStreaming } = useRealtimeData();
   const [canValues, setCanValues] = useState<CANValue[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [useSampleData, setUseSampleData] = useState(!dbcData);
   const [dataMode, setDataMode] = useState<'static' | 'realtime'>('static');
   const [unmappedFrames, setUnmappedFrames] = useState<Map<number, CANFrame>>(
     new Map()
@@ -24,11 +22,8 @@ export default function ValuesPage() {
 
   // 使用するDBCデータを決定
   const activeDBCData = useMemo(() => {
-    if (useSampleData) {
-      return sampleDBCDatabase;
-    }
     return dbcData;
-  }, [dbcData, useSampleData]);
+  }, [dbcData]);
 
   // 静的データからCANシグナル値を抽出
   useEffect(() => {
@@ -39,23 +34,9 @@ export default function ValuesPage() {
       return;
     }
 
-    setIsLoading(true);
-
-    try {
-      const parser = new CANParser(activeDBCData);
-
-      // サンプルフレームデータを解析
-      const dataSet = parser.parseDataSet(sampleCANFrames, {
-        excludeInvalidValues: true,
-      });
-
-      setCanValues(dataSet.values);
-    } catch (error) {
-      console.error('CANデータの解析に失敗しました:', error);
-      setCanValues([]);
-    } finally {
-      setIsLoading(false);
-    }
+    // 静的データモードではデータをクリア
+    setCanValues([]);
+    setIsLoading(false);
   }, [activeDBCData, dataMode]);
 
   // リアルタイムデータからCANシグナル値を抽出
@@ -149,26 +130,6 @@ export default function ValuesPage() {
               </p>
 
               <div className="space-y-4">
-                <button
-                  onClick={() => setUseSampleData(true)}
-                  className="w-full inline-flex items-center justify-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  <svg
-                    className="w-5 h-5 mr-2"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M13 10V3L4 14h7v7l9-11h-7z"
-                    />
-                  </svg>
-                  サンプルデータを使用
-                </button>
-
                 <Link
                   href="/"
                   className="w-full inline-flex items-center justify-center px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
@@ -207,26 +168,11 @@ export default function ValuesPage() {
             <p className="text-gray-600 mt-1">
               {dataMode === 'realtime'
                 ? 'リアルタイムCANデータを表示中'
-                : `${useSampleData ? 'サンプルデータ' : 'アップロードされたDBC'} を使用してCANフレームを解析`}
+                : 'アップロードされたDBCを使用してCANフレームを解析'}
             </p>
           </div>
 
           <div className="flex items-center space-x-4">
-            {/* データソース切り替え（静的データモードの場合のみ表示） */}
-            {dbcData && dataMode === 'static' && (
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={useSampleData}
-                  onChange={(e) => setUseSampleData(e.target.checked)}
-                  className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
-                />
-                <span className="ml-2 text-sm text-gray-700">
-                  サンプルデータを使用
-                </span>
-              </label>
-            )}
-
             {/* リアルタイムモード表示 */}
             {dataMode === 'realtime' && (
               <span className="inline-flex items-center px-3 py-2 rounded-full text-sm font-medium bg-green-100 text-green-800">
@@ -263,9 +209,7 @@ export default function ValuesPage() {
                 <div className="bg-gray-50 rounded-lg p-4">
                   <p className="text-sm text-gray-600 mb-2">ファイル名:</p>
                   <p className="font-mono text-sm bg-white px-2 py-1 rounded border">
-                    {useSampleData
-                      ? 'サンプルDBC'
-                      : dbcFileName || 'アップロードされたDBC'}
+                    {dbcFileName || 'アップロードされたDBC'}
                   </p>
 
                   <p className="text-sm text-gray-600 mb-2 mt-4">
@@ -515,11 +459,7 @@ export default function ValuesPage() {
                     データソース
                   </p>
                   <p className="text-lg font-semibold text-gray-900">
-                    {dataMode === 'realtime'
-                      ? 'リアルタイム'
-                      : useSampleData
-                        ? 'サンプル'
-                        : 'アップロード'}
+                    {dataMode === 'realtime' ? 'リアルタイム' : 'アップロード'}
                   </p>
                 </div>
               </div>

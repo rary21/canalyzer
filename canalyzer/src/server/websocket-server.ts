@@ -100,20 +100,19 @@ class CANWebSocketServer {
   /**
    * 環境変数からインターフェースタイプを取得
    */
-  private getInterfaceType(): 'null' | 'virtual' | 'hardware' | 'openpilot' {
-    const type = process.env.CAN_INTERFACE_TYPE?.toLowerCase() || 'virtual';
+  private getInterfaceType(): 'null' | 'hardware' | 'openpilot' {
+    const type = process.env.CAN_INTERFACE_TYPE?.toLowerCase() || 'null';
 
     switch (type) {
       case 'null':
-      case 'virtual':
       case 'hardware':
       case 'openpilot':
         return type;
       case 'none':
         return 'null'; // noneはnullインターフェースにマップ
       default:
-        console.warn(`Unknown interface type: ${type}, defaulting to virtual`);
-        return 'virtual';
+        console.warn(`Unknown interface type: ${type}, defaulting to null`);
+        return 'null';
     }
   }
 
@@ -121,7 +120,7 @@ class CANWebSocketServer {
    * CANインターフェースを作成（エラーハンドリング付き）
    */
   private createCANInterface(
-    type: 'null' | 'virtual' | 'hardware' | 'openpilot'
+    type: 'null' | 'hardware' | 'openpilot'
   ): ICANInterface {
     try {
       const iface = CANInterfaceFactory.create(type);
@@ -129,8 +128,8 @@ class CANWebSocketServer {
       return iface;
     } catch (error) {
       console.error(`Failed to create ${type} interface:`, error);
-      console.log('Falling back to virtual interface');
-      return CANInterfaceFactory.create('virtual');
+      console.log('Falling back to null interface');
+      return CANInterfaceFactory.create('null');
     }
   }
 
@@ -576,7 +575,7 @@ class CANWebSocketServer {
         interface: this.canInterface.getName(),
         connected: this.canInterface.isConnected(),
         streaming: this.isStreaming,
-        supportedTypes: ['null', 'virtual', 'hardware', 'openpilot'],
+        supportedTypes: ['null', 'hardware', 'openpilot'],
       },
       success: true,
       // 統計情報はdata層の外に移動して、簡潔なレスポンスを作成

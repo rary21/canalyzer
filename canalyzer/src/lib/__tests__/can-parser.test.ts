@@ -1,7 +1,6 @@
 import { CANParser } from '../can-parser';
 import { CANFrame, CANValue, ParseConfig } from '@/types/can';
 import { DBCDatabase, CANSignal } from '@/types/dbc';
-import { sampleDBCDatabase, sampleCANFrames } from '@/data/sample-can-data';
 
 describe('CANParser', () => {
   let parser: CANParser;
@@ -528,59 +527,6 @@ describe('CANParser', () => {
       expect(result!.min).toBe(10);
       expect(result!.max).toBe(30);
       expect(result!.average).toBe(20);
-    });
-  });
-
-  describe('実際のサンプルデータでのテスト', () => {
-    it('サンプルDBCデータベースでCANフレームを解析できる', () => {
-      const sampleParser = new CANParser(sampleDBCDatabase);
-
-      // 最初のフレームを解析
-      const firstFrame = sampleCANFrames[0];
-      const result = sampleParser.parseFrame(firstFrame);
-
-      expect(result.error).toBeUndefined();
-      expect(result.messageName).toBe('Engine_Status');
-      expect(result.signals.length).toBeGreaterThan(0);
-
-      // Engine_RPMシグナルの確認
-      const rpmSignal = result.signals.find(
-        (s) => s.signalName === 'Engine_RPM'
-      );
-      expect(rpmSignal).toBeDefined();
-      expect(rpmSignal!.unit).toBe('rpm');
-      expect(rpmSignal!.physicalValue).toBeGreaterThanOrEqual(0);
-    });
-
-    it('サンプルフレームデータセットを一括解析できる', () => {
-      const sampleParser = new CANParser(sampleDBCDatabase);
-
-      const dataSet = sampleParser.parseDataSet(sampleCANFrames, {
-        excludeInvalidValues: true,
-      });
-
-      expect(dataSet.frames.length).toBeGreaterThan(0);
-      expect(dataSet.values.length).toBeGreaterThan(0);
-      expect(dataSet.name).toContain('CANデータセット');
-
-      // 各シグナルが正しく解析されているか確認
-      const uniqueSignals = new Set(dataSet.values.map((v) => v.signalName));
-      expect(uniqueSignals.size).toBeGreaterThan(1);
-
-      // 時系列データの確認
-      const rpmData = sampleParser.getTimeSeriesData(
-        'Engine_RPM',
-        dataSet.values
-      );
-      expect(rpmData.length).toBeGreaterThan(0);
-
-      // 統計情報の確認
-      const rpmStats = sampleParser.getSignalStatistics(
-        'Engine_RPM',
-        dataSet.values
-      );
-      expect(rpmStats).not.toBeNull();
-      expect(rpmStats!.count).toBeGreaterThan(0);
     });
   });
 });

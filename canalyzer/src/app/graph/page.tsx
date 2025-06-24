@@ -9,7 +9,6 @@ import RealtimeGraph from '@/components/RealtimeGraph';
 import GraphSettings from '@/components/GraphSettings';
 import { useRealtimeGraph } from '@/hooks/useRealtimeGraph';
 import { CANParser } from '@/lib/can-parser';
-import { sampleDBCDatabase, sampleCANFrames } from '@/data/sample-can-data';
 import { CANValue, CANFrame } from '@/types/can';
 import { useRealtimeData } from '@/contexts/RealtimeDataContext';
 
@@ -17,7 +16,6 @@ export default function GraphPage() {
   const { dbcData } = useDBCContext();
   const [canValues, setCanValues] = useState<CANValue[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [useSampleData, setUseSampleData] = useState(!dbcData);
   const [dataMode, setDataMode] = useState<'static' | 'realtime'>('static');
 
   // リアルタイムデータのフック
@@ -27,16 +25,14 @@ export default function GraphPage() {
   const activeDBCData = useMemo(() => {
     console.log('activeDBCData算出:', {
       dbcData: !!dbcData,
-      useSampleData,
-      sampleDBCDatabase: !!sampleDBCDatabase,
     });
-    const result = dbcData || (useSampleData ? sampleDBCDatabase : null);
+    const result = dbcData;
     console.log('activeDBCData結果:', !!result);
     if (result) {
       console.log('Messages count:', result.messages?.size || 0);
     }
     return result;
-  }, [dbcData, useSampleData]);
+  }, [dbcData]);
 
   // リアルタイムグラフのフック
   const {
@@ -65,26 +61,9 @@ export default function GraphPage() {
       return;
     }
 
-    setIsLoading(true);
-
-    try {
-      const parser = new CANParser(activeDBCData);
-
-      // サンプルフレームデータを解析
-      const dataSet = parser.parseDataSet(sampleCANFrames, {
-        excludeInvalidValues: true,
-      });
-
-      console.log('解析されたCANデータセット:', dataSet);
-      console.log('利用可能なシグナル数:', dataSet.values.length);
-
-      setCanValues(dataSet.values);
-    } catch (error) {
-      console.error('CANデータの解析に失敗しました:', error);
-      setCanValues([]);
-    } finally {
-      setIsLoading(false);
-    }
+    // 静的データモードではデータをクリア
+    setCanValues([]);
+    setIsLoading(false);
   }, [activeDBCData, dataMode]);
 
   // リアルタイムデータからCANシグナル値を抽出
@@ -164,26 +143,6 @@ export default function GraphPage() {
               </p>
 
               <div className="space-y-4">
-                <button
-                  onClick={() => setUseSampleData(true)}
-                  className="w-full inline-flex items-center justify-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  <svg
-                    className="w-5 h-5 mr-2"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M13 10V3L4 14h7v7l9-11h-7z"
-                    />
-                  </svg>
-                  サンプルデータを使用
-                </button>
-
                 <Link
                   href="/"
                   className="w-full inline-flex items-center justify-center px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
@@ -225,9 +184,7 @@ export default function GraphPage() {
             <p className="text-gray-600 mt-1">
               {dataMode === 'realtime'
                 ? 'リアルタイムデータ'
-                : useSampleData && !dbcData
-                  ? 'サンプルデータ'
-                  : 'アップロードされたDBC'}{' '}
+                : 'アップロードされたDBC'}{' '}
               を使用したシグナル時系列表示
             </p>
           </div>
@@ -260,21 +217,6 @@ export default function GraphPage() {
                 )}
               </button>
             </div>
-
-            {/* データソース切り替え */}
-            {dbcData && dataMode === 'static' && (
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={useSampleData}
-                  onChange={(e) => setUseSampleData(e.target.checked)}
-                  className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
-                />
-                <span className="ml-2 text-sm text-gray-700">
-                  サンプルデータを使用
-                </span>
-              </label>
-            )}
 
             {/* データ更新ボタン */}
             <button
