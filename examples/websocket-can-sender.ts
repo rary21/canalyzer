@@ -8,7 +8,7 @@
 import WebSocket from 'ws';
 
 // 接続設定
-const WS_URL = 'ws://localhost:3456/ws';
+const WS_URL = 'ws://localhost:3000/ws';
 const SEND_INTERVAL = 1000; // 1秒間隔
 
 // CANフレーム型定義
