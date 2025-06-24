@@ -211,7 +211,10 @@ const RealtimeGraph = React.memo(
                   stroke="#6b7280"
                   fontSize={12}
                   type="number"
-                  domain={['dataMin', 'dataMax']}
+                  domain={[
+                    () => Date.now() - config.timeRange,
+                    () => Date.now(),
+                  ]}
                   tickFormatter={(value) => {
                     // 日時フォーマット設定に基づいてフォーマット
                     if (config.dateFormat === 'time') {
@@ -267,7 +270,7 @@ const RealtimeGraph = React.memo(
                     strokeWidth={2}
                     dot={false}
                     connectNulls={false}
-                    animationDuration={300}
+                    isAnimationActive={false}
                   />
                 ))}
               </LineChart>

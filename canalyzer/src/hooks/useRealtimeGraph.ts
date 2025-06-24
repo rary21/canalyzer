@@ -71,10 +71,13 @@ export function useRealtimeGraph({
 
       const signalNames = new Set(selectedSignals.map((s) => s.name));
       const dataMap = new Map<number, GraphDataPoint>();
+      const now = Date.now();
+      const cutoffTime = now - graphState.config.timeRange;
 
-      // タイムスタンプごとにデータをグループ化
+      // タイムスタンプごとにデータをグループ化（時間範囲内のみ）
       values.forEach((value) => {
         if (!signalNames.has(value.signalName)) return;
+        if (value.timestamp < cutoffTime) return; // 古いデータはスキップ
 
         const timestamp = value.timestamp;
         const existingPoint = dataMap.get(timestamp) || { timestamp };
@@ -86,13 +89,14 @@ export function useRealtimeGraph({
         (a, b) => a.timestamp - b.timestamp
       );
     },
-    []
+    [graphState.config.timeRange]
   );
 
-  // データの更新処理
+  // データの更新処理（最適化版）
   const updateGraphData = useCallback(() => {
     if (!graphState.selectedSignals.length) {
       setGraphState((prev) => ({ ...prev, data: [] }));
+      dataPointsMapRef.current.clear();
       return;
     }
 
@@ -101,10 +105,34 @@ export function useRealtimeGraph({
       graphState.selectedSignals
     );
 
-    setGraphState((prev) => ({
-      ...prev,
-      data: newDataPoints,
-    }));
+    // 新しいデータポイントを既存データに追加
+    setGraphState((prev) => {
+      const now = Date.now();
+      const cutoffTime = now - prev.config.timeRange;
+
+      // 既存データから古いデータを除外
+      const filteredExistingData = prev.data.filter(
+        (point) => point.timestamp >= cutoffTime
+      );
+
+      // 新しいデータをマージ（重複を避ける）
+      const existingTimestamps = new Set(
+        filteredExistingData.map((p) => p.timestamp)
+      );
+      const uniqueNewData = newDataPoints.filter(
+        (point) => !existingTimestamps.has(point.timestamp)
+      );
+
+      // データを結合してソート
+      const combinedData = [...filteredExistingData, ...uniqueNewData].sort(
+        (a, b) => a.timestamp - b.timestamp
+      );
+
+      return {
+        ...prev,
+        data: combinedData,
+      };
+    });
 
     lastUpdateTimeRef.current = Date.now();
   }, [canValues, graphState.selectedSignals, generateGraphDataPoints]);
