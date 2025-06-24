@@ -57,12 +57,6 @@ npm run build
 - プロダクションビルドの成功確認
 - ビルドエラーがある場合は修正する
 
-#### 5. formatter
-
-```bash
-npm run format
-```
-
 ## 開発サーバーの管理
 
 ### サーバーの停止方法
@@ -142,7 +136,7 @@ PORT=3456 npm run dev
 ```
 
 #### 2. WebSocketサンプル送信プログラムのポート設定確認
-`canalyzer/examples/websocket-can-sender.ts`のポートが開発サーバーと一致していることを確認：
+WebSocketサンプル送信プログラムを作成し、ポートが開発サーバーと一致していることを確認：
 ```typescript
 const WS_URL = 'ws://localhost:3456/ws';
 ```
@@ -162,8 +156,10 @@ const WS_URL = 'ws://localhost:3456/ws';
 - 左側のシグナル選択から表示したいシグナルを選択（例：WHEEL_SPEED_FL）
 
 #### 6. WebSocketサンプル送信プログラムを実行
+WebSocketサンプル送信プログラムを作成して実行：
 ```bash
-npx tsx canalyzer/examples/websocket-can-sender.ts
+# サンプルプログラムを作成後
+npx tsx examples/websocket-can-sender.ts
 ```
 
 #### 7. グラフ表示の確認

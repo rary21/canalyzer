@@ -66,7 +66,7 @@ echo "CAN_INTERFACE_TYPE=virtual" > .env.local
 
 ```env
 # CANインターフェース設定
-CAN_INTERFACE_TYPE=virtual    # null, virtual, hardware, openpilot
+CAN_INTERFACE_TYPE=virtual    # null(デフォルト), virtual, hardware, openpilot
 
 # === openpilot設定 ===
 OPENPILOT_ZMQ_ENDPOINT=tcp://192.168.1.100:8001
@@ -83,8 +83,8 @@ NEXT_PUBLIC_WS_URL=ws://localhost:3000/ws
 
 #### CAN_INTERFACE_TYPEの値
 
-- `null`: CANデータを生成しない（テスト用）
-- `virtual` (デフォルト): 仮想CANデータを生成（エンジン、車両運動、ボディ情報）
+- `null` (デフォルト): CANデータを生成しない（テスト用）
+- `virtual`: 仮想CANデータを生成（エンジン、車両運動、ボディ情報）
 - `hardware`: 実際のCANハードウェアを使用（未実装）
 - `openpilot`: openpilotからZMQ経由でリアルタイムCANデータを受信
 
@@ -112,8 +112,8 @@ NEXT_PUBLIC_WS_URL=ws://localhost:3000/ws
 WebSocketクライアントからCANフレームを送信：
 
 ```bash
-# サンプル送信スクリプトの実行
-node examples/websocket-can-sender.js
+# サンプル送信スクリプトの実行（作成後）
+npx tsx examples/websocket-can-sender.ts
 ```
 
 ### 5. openpilot連携

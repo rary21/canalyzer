@@ -202,7 +202,7 @@ export default function MyComponent() {
 NEXT_PUBLIC_WS_URL=ws://localhost:3000/ws
 
 # CANインターフェース設定
-CAN_INTERFACE_TYPE=none        # none(デフォルト), virtual, hardware
+CAN_INTERFACE_TYPE=null        # null(デフォルト), virtual, hardware
 CAN_DEVICE_NAME=can0
 CAN_BITRATE=500000
 ```
@@ -277,7 +277,8 @@ ws.send(
 プロジェクトには簡単なCANフレーム送信スクリプトが含まれています：
 
 ```bash
-node examples/websocket-can-sender.js
+# サンプルファイル作成後
+npx tsx examples/websocket-can-sender.ts
 ```
 
 ## 拡張ポイント
