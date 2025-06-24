@@ -63,6 +63,23 @@ npm run build
 npm run format
 ```
 
+## 開発サーバーの管理
+
+### サーバーの停止方法
+
+開発サーバーを停止する際は、他のプロジェクトに影響を与えないよう、必ず`npx kill-port`を使用してください：
+
+```bash
+npx kill-port <ポート番号>
+```
+
+例：
+```bash
+npx kill-port 3456
+```
+
+**注意**: `pkill`やプロセス名での終了は他の開発者のサーバーも停止してしまう可能性があるため使用しないでください。
+
 ### コードフォーマット
 
 - **Prettier設定**: `.prettierrc`に基づいてフォーマット
@@ -87,3 +104,74 @@ npm run format
 - 関数とクラスには適切なJSDocコメントを記載する
 - エラーハンドリングを適切に実装する
 - Prettierによる統一されたコードフォーマットを維持する
+
+## Playwright MCPサーバーを使用した機能テスト
+UIに関わる変更をした際には意図通りに変更できていることをPlaywright MCPを使いスクリーンショットで確認してください。  
+取得したスクリーンショットは作業ディレクトリを作成してそこに保存してください。  
+
+### 1. ブラウザの起動とページナビゲート
+開発サーバーは適当なポートでオープンしてください。
+
+```
+PORT=<port> npm run dev
+```
+
+```bash
+# MCPサーバーでブラウザを開く
+mcp__playwright__browser_navigate url:"http://localhost:<port>"
+```
+
+### 2. ページスナップショットの取得
+
+```bash
+# 現在のページの状態を確認
+mcp__playwright__browser_snapshot
+```
+
+## グラフ機能のリアルタイムデータ受信テスト手順
+
+### 前提条件
+- DBCファイルとWebSocketサンプル送信プログラムのCAN IDが一致している必要がある
+- `toyota_nodsu_pt_generated.dbc`にはID 170 (0x0AA) WHEEL_SPEEDSメッセージが含まれている
+
+### テスト手順
+
+#### 1. 開発サーバーの起動
+```bash
+PORT=3456 npm run dev
+```
+
+#### 2. WebSocketサンプル送信プログラムのポート設定確認
+`canalyzer/examples/websocket-can-sender.ts`のポートが開発サーバーと一致していることを確認：
+```typescript
+const WS_URL = 'ws://localhost:3456/ws';
+```
+
+#### 3. アプリケーションでDBCファイルをアップロード
+- ブラウザでトップページ（http://localhost:3456）にアクセス
+- 「DBC編集」タブを選択
+- 「ファイルを選択」から`dbc/toyota_nodsu_pt_generated.dbc`をアップロード
+
+#### 4. CAN値表示タブでリアルタイム受信を開始
+- 「CAN値表示」タブに移動
+- 「リアルタイム」ボタンをクリックして有効化（青色に変化）
+- WebSocket接続が「ストリーミング中」と表示されることを確認
+
+#### 5. グラフタブでシグナルを選択
+- 「グラフ表示」タブに移動
+- 左側のシグナル選択から表示したいシグナルを選択（例：WHEEL_SPEED_FL）
+
+#### 6. WebSocketサンプル送信プログラムを実行
+```bash
+npx tsx canalyzer/examples/websocket-can-sender.ts
+```
+
+#### 7. グラフ表示の確認
+- 選択したシグナルのリアルタイムデータがグラフに表示される
+- データが受信されない場合は「グラフデータなし」と表示される
+
+### トラブルシューティング
+- グラフにデータが表示されない場合：
+  - DBCファイルのメッセージIDとWebSocket送信プログラムのIDが一致しているか確認
+  - CAN値表示タブでリアルタイム受信が有効になっているか確認
+  - WebSocket接続が正常に確立されているか確認
