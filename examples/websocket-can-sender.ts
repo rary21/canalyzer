@@ -8,7 +8,9 @@
 import WebSocket from 'ws';
 
 // 接続設定
-const WS_URL = 'ws://localhost:3000/ws';
+const DEFAULT_PORT = 3000;
+const port = process.argv[2] ? parseInt(process.argv[2], 10) : DEFAULT_PORT;
+const WS_URL = `ws://localhost:${port}/ws`;
 const SEND_INTERVAL = 1000; // 1秒間隔
 
 // CANフレーム型定義
@@ -156,6 +158,19 @@ class CANSender {
 // メイン実行
 function main(): void {
   console.log('=== WebSocket CAN送信サンプル ===\n');
+  console.log(`ポート番号: ${port}`);
+  console.log(`接続先URL: ${WS_URL}\n`);
+
+  // 使用方法の表示
+  if (process.argv.includes('--help') || process.argv.includes('-h')) {
+    console.log('使用方法:');
+    console.log('  npx tsx websocket-can-sender.ts [ポート番号]');
+    console.log('');
+    console.log('例:');
+    console.log('  npx tsx websocket-can-sender.ts       # デフォルト (ポート3000)');
+    console.log('  npx tsx websocket-can-sender.ts 3456  # ポート3456を使用');
+    process.exit(0);
+  }
 
   const sender = new CANSender(WS_URL);
 
