@@ -5,6 +5,7 @@ import {
   GraphConfig,
   TIME_RANGE_PRESETS,
   UPDATE_INTERVAL_PRESETS,
+  DATE_FORMAT_PRESETS,
 } from '@/types/graph';
 import { useGraphSettings } from '@/hooks/useGraphSettings';
 
@@ -196,6 +197,46 @@ export default function GraphSettings({
                 </div>
               </div>
             )}
+          </div>
+
+          {/* 日時フォーマット設定 */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              日時フォーマット
+            </label>
+            <select
+              value={config.dateFormat || 'auto'}
+              onChange={(e) =>
+                onConfigChange({
+                  ...config,
+                  dateFormat: e.target.value as GraphConfig['dateFormat'],
+                })
+              }
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              {DATE_FORMAT_PRESETS.map((preset) => (
+                <option key={preset.value} value={preset.value}>
+                  {preset.label}
+                </option>
+              ))}
+            </select>
+            {config.dateFormat === 'custom' && (
+              <input
+                type="text"
+                value={config.customDateFormat || 'yyyy/MM/dd HH:mm:ss'}
+                onChange={(e) =>
+                  onConfigChange({
+                    ...config,
+                    customDateFormat: e.target.value,
+                  })
+                }
+                placeholder="yyyy/MM/dd HH:mm:ss"
+                className="w-full mt-2 px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            )}
+            <p className="text-xs text-gray-500 mt-1">
+              自動選択では時間範囲に応じて最適な形式が選ばれます
+            </p>
           </div>
 
           {/* 表示オプション */}

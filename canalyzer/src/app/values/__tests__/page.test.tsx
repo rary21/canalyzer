@@ -105,6 +105,8 @@ const renderWithDBCContext = (dbcData: DBCDatabase | null = null) => {
     stopRealtime: jest.fn(),
     subscribe: jest.fn(),
     unsubscribe: jest.fn(),
+    sendFrame: jest.fn(),
+    setFilters: jest.fn(),
     stats: {
       totalFrames: 0,
       framesPerSecond: 0,
@@ -113,6 +115,8 @@ const renderWithDBCContext = (dbcData: DBCDatabase | null = null) => {
       lastUpdate: 0,
       dataPoints: {},
     },
+    filters: {},
+    interfaceInfo: null,
   });
 
   return render(<ValuesPage />);

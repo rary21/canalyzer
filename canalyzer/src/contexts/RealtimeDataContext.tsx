@@ -25,6 +25,7 @@ const DATA_UPDATE_INTERVAL = 50; // データ更新のスロットル間隔（ms
 
 export function RealtimeDataProvider({ children }: RealtimeDataProviderProps) {
   // WebSocket接続
+  const wsReturn = useWebSocket();
   const {
     status,
     isConnected,
@@ -34,7 +35,7 @@ export function RealtimeDataProvider({ children }: RealtimeDataProviderProps) {
     stopStreaming,
     subscribe,
     unsubscribe,
-  } = useWebSocket();
+  } = wsReturn;
 
   // ローカル状態
   const [isStreaming, setIsStreaming] = useState(false);
@@ -224,9 +225,17 @@ export function RealtimeDataProvider({ children }: RealtimeDataProviderProps) {
     stopRealtime,
     subscribe,
     unsubscribe,
+    sendFrame: wsReturn.sendFrame || (() => {}),
+    setFilters: wsReturn.setFilters || (() => {}),
 
     // 統計情報
     stats,
+
+    // フィルター設定
+    filters: wsReturn.filters || {},
+
+    // インターフェース情報
+    interfaceInfo: wsReturn.interfaceInfo || null,
   };
 
   return (

@@ -20,8 +20,9 @@
 ### ⚙️ 柔軟なCANインターフェース
 
 - **Virtual**: 仮想CANデータ生成（開発・デモ用）
-- **None**: データ生成なし（デフォルト）
+- **Null**: データ生成なし（テスト用）
 - **Hardware**: 実CANハードウェア対応（将来実装予定）
+- **Openpilot**: openpilot連携によるリアルタイムCANデータ受信
 
 ### 🛠️ デバッグ・診断機能
 
@@ -65,9 +66,16 @@ echo "CAN_INTERFACE_TYPE=virtual" > .env.local
 
 ```env
 # CANインターフェース設定
-CAN_INTERFACE_TYPE=none    # none, virtual, hardware
-CAN_DEVICE_NAME=can0       # ハードウェア使用時のデバイス名
-CAN_BITRATE=500000         # CANバス通信速度
+CAN_INTERFACE_TYPE=virtual    # null, virtual, hardware, openpilot
+
+# === openpilot設定 ===
+OPENPILOT_ZMQ_ENDPOINT=tcp://192.168.1.100:8001
+OPENPILOT_ZMQ_TOPIC=can
+OPENPILOT_MAX_RECONNECT_ATTEMPTS=10
+OPENPILOT_RECONNECT_INTERVAL=5000
+OPENPILOT_BUS_FILTER=0,1,2  # 特定バスのみ受信
+OPENPILOT_ID_FILTER=0x100,0x200,0x300  # 特定IDのみ受信
+OPENPILOT_DEBUG_LOGGING=false
 
 # WebSocket接続設定
 NEXT_PUBLIC_WS_URL=ws://localhost:3000/ws
@@ -75,9 +83,10 @@ NEXT_PUBLIC_WS_URL=ws://localhost:3000/ws
 
 #### CAN_INTERFACE_TYPEの値
 
-- `none` (デフォルト): CANデータを生成しない
-- `virtual`: 仮想CANデータを生成（エンジン、車両運動、ボディ情報）
+- `null`: CANデータを生成しない（テスト用）
+- `virtual` (デフォルト): 仮想CANデータを生成（エンジン、車両運動、ボディ情報）
 - `hardware`: 実際のCANハードウェアを使用（未実装）
+- `openpilot`: openpilotからZMQ経由でリアルタイムCANデータを受信
 
 ## 使用方法
 
@@ -106,6 +115,28 @@ WebSocketクライアントからCANフレームを送信：
 # サンプル送信スクリプトの実行
 node examples/websocket-can-sender.js
 ```
+
+### 5. openpilot連携
+
+openpilotとの連携を有効にする：
+
+1. `.env.local`ファイルに以下を設定：
+
+   ```env
+   CAN_INTERFACE_TYPE=openpilot
+   OPENPILOT_ZMQ_ENDPOINT=tcp://192.168.1.100:8001
+   ```
+
+2. openpilotデバイスのIPアドレスを正しく設定
+3. 開発サーバーを再起動
+4. WebSocketクライアントがopenpilotからのリアルタイムCANデータを受信開始
+
+#### openpilot設定のポイント
+
+- **ZMQエンドポイント**: openpilotが動作するデバイスのIPアドレス
+- **フィルタリング**: 特定のバスやCANIDのみを受信して負荷を軽減
+- **再接続機能**: 接続エラー時の自動復旧
+- **デバッグログ**: 詳細なログ出力で問題診断をサポート
 
 ## プロジェクト構造
 
@@ -147,6 +178,8 @@ npm run build             # プロダクションビルド
 - **フロントエンド**: Next.js 15, React 19, TypeScript, Tailwind CSS
 - **バックエンド**: Node.js, WebSocket (ws)
 - **CANライブラリ**: @montra-connect/dbc-parser
+- **CANインターフェース**: 統一されたICANInterfaceによる抽象化
+- **openpilot連携**: ZMQ (zeromq) + CapnProto (将来実装)
 - **テスト**: Jest, React Testing Library
 - **グラフ表示**: Recharts
 
@@ -155,6 +188,21 @@ npm run build             # プロダクションビルド
 - [WebSocket統合ガイド](./docs/websocket-integration.md)
 - [データ構造設計](./docs/data-structures.md)
 - [DBCフォーマット仕様](./docs/dbc-format.md)
+- [openpilot連携ガイド](./docs/openpilot-integration.md)
+
+## パフォーマンス最適化
+
+### 高頻度CANメッセージ処理
+
+- **バックプレッシャー対応**: クライアントのWebSocketバッファ状態を監視
+- **メッセージキューイング**: 高負荷時の適切なメッセージ配信制御
+- **フィルタリング**: 不要なメッセージの早期除外によるCPU使用率削減
+
+### 複数クライアント対応
+
+- **購読管理**: 各クライアントの個別フィルタリング設定
+- **ハートビート監視**: 無効なクライアント接続の自動切断
+- **メモリ効率**: WeakMapを使用したクライアント情報管理
 
 ## ライセンス
 

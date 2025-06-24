@@ -48,6 +48,10 @@ export interface GraphConfig {
   showLegend: boolean;
   /** ツールチップ表示 */
   showTooltip: boolean;
+  /** 日時フォーマットの種類 */
+  dateFormat?: 'auto' | 'time' | 'datetime' | 'custom';
+  /** カスタム日時フォーマット（dateFormatがcustomの場合） */
+  customDateFormat?: string;
 }
 
 /**
@@ -92,6 +96,7 @@ export const DEFAULT_GRAPH_CONFIG: GraphConfig = {
   showGrid: true,
   showLegend: true,
   showTooltip: true,
+  dateFormat: 'auto',
 };
 
 /**
@@ -114,4 +119,14 @@ export const UPDATE_INTERVAL_PRESETS = [
   { label: '250ms', value: 250 },
   { label: '500ms', value: 500 },
   { label: '1秒', value: 1000 },
+] as const;
+
+/**
+ * 日時フォーマットのプリセット
+ */
+export const DATE_FORMAT_PRESETS = [
+  { label: '自動', value: 'auto' },
+  { label: '時刻のみ (HH:mm:ss)', value: 'time' },
+  { label: '日時 (MM/dd HH:mm)', value: 'datetime' },
+  { label: 'カスタム', value: 'custom' },
 ] as const;

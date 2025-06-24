@@ -1,182 +1,7 @@
 import { Server } from 'http';
 import { WebSocketServer, WebSocket } from 'ws';
 import { CANFrame } from '../types/can';
-
-// 何もしないCANインターフェース
-class NullCANInterface {
-  private isRunning = false;
-  private frameListeners: ((frame: CANFrame) => void)[] = [];
-  private errorListeners: ((error: Error) => void)[] = [];
-
-  async start(): Promise<void> {
-    this.isRunning = true;
-    console.log('Null CAN interface started (no data will be generated)');
-  }
-
-  async stop(): Promise<void> {
-    this.isRunning = false;
-    console.log('Null CAN interface stopped');
-  }
-
-  onFrame(callback: (frame: CANFrame) => void): void {
-    this.frameListeners.push(callback);
-  }
-
-  onError(callback: (error: Error) => void): void {
-    this.errorListeners.push(callback);
-  }
-
-  isConnected(): boolean {
-    return this.isRunning;
-  }
-
-  getName(): string {
-    return 'Null CAN Interface';
-  }
-}
-
-class VirtualCANInterface {
-  private isRunning = false;
-  private frameListeners: ((frame: CANFrame) => void)[] = [];
-  private errorListeners: ((error: Error) => void)[] = [];
-  private intervalId: NodeJS.Timeout | null = null;
-
-  async start(): Promise<void> {
-    if (this.isRunning) return;
-
-    this.isRunning = true;
-    console.log('Virtual CAN interface started');
-
-    // 100msごとに仮想CANデータを生成
-    this.intervalId = setInterval(() => {
-      this.generateVirtualFrames();
-    }, 100);
-  }
-
-  async stop(): Promise<void> {
-    if (!this.isRunning) return;
-
-    this.isRunning = false;
-    if (this.intervalId) {
-      clearInterval(this.intervalId);
-      this.intervalId = null;
-    }
-    console.log('Virtual CAN interface stopped');
-  }
-
-  onFrame(callback: (frame: CANFrame) => void): void {
-    this.frameListeners.push(callback);
-  }
-
-  onError(callback: (error: Error) => void): void {
-    this.errorListeners.push(callback);
-  }
-
-  isConnected(): boolean {
-    return this.isRunning;
-  }
-
-  getName(): string {
-    return 'Virtual CAN Interface';
-  }
-
-  private generateVirtualFrames(): void {
-    const timestamp = Date.now();
-    const time = timestamp / 1000;
-
-    // エンジンステータスメッセージ (ID: 0x100)
-    const engineFrame: CANFrame = {
-      id: 0x100,
-      data: new Uint8Array([
-        // RPM: 800-6000 (変動)
-        Math.floor(800 + Math.sin(time * 0.5) * 2600 + Math.random() * 100) &
-          0xff,
-        (Math.floor(800 + Math.sin(time * 0.5) * 2600 + Math.random() * 100) >>
-          8) &
-          0xff,
-        // 温度: 20-90°C (徐々に上昇)
-        Math.min(90, 20 + time * 0.1) & 0xff,
-        // 燃料レベル: 0-100% (徐々に減少)
-        Math.max(0, 100 - time * 0.05) & 0xff,
-        0,
-        0,
-        0,
-        0,
-      ]),
-      timestamp,
-      extended: false,
-      dlc: 8,
-    };
-
-    // 車両動作メッセージ (ID: 0x200)
-    const motionFrame: CANFrame = {
-      id: 0x200,
-      data: new Uint8Array([
-        // 速度: 0-200 km/h (変動)
-        Math.floor(Math.max(0, Math.sin(time * 0.3) * 100 + 50)) & 0xff,
-        (Math.floor(Math.max(0, Math.sin(time * 0.3) * 100 + 50)) >> 8) & 0xff,
-        // アクセル: 0-100%
-        Math.floor(Math.max(0, Math.sin(time * 0.3) * 50 + 50)) & 0xff,
-        // ブレーキ: 0-100%
-        Math.floor(Math.max(0, -Math.sin(time * 0.3) * 50 + 10)) & 0xff,
-        // ステアリング角度: -720 to +720
-        Math.floor(Math.sin(time * 0.2) * 360) & 0xff,
-        (Math.floor(Math.sin(time * 0.2) * 360) >> 8) & 0xff,
-        0,
-        0,
-      ]),
-      timestamp,
-      extended: false,
-      dlc: 8,
-    };
-
-    // ボディステータスメッセージ (ID: 0x300)
-    const bodyFrame: CANFrame = {
-      id: 0x300,
-      data: new Uint8Array([
-        // ドア状態とライト状態（ランダムに変化）
-        Math.random() > 0.95 ? 0xff : 0x00,
-        // バッテリー電圧: 11.5-14.5V
-        Math.floor((11.5 + Math.random() * 3) * 10) & 0xff,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-      ]),
-      timestamp,
-      extended: false,
-      dlc: 8,
-    };
-
-    // フレームをリスナーに通知
-    this.frameListeners.forEach((listener) => {
-      listener(engineFrame);
-      listener(motionFrame);
-      listener(bodyFrame);
-    });
-  }
-}
-
-// CANインターフェースファクトリー
-class CANInterfaceFactory {
-  static create(type = 'none'): NullCANInterface | VirtualCANInterface {
-    switch (type.toLowerCase()) {
-      case 'virtual':
-        console.log('Creating Virtual CAN Interface');
-        return new VirtualCANInterface();
-      case 'hardware':
-        console.log('Creating Hardware CAN Interface (not implemented yet)');
-        // TODO: 将来的にSocketCANインターフェースを実装
-        throw new Error('Hardware CAN Interface not implemented yet');
-      case 'none':
-      default:
-        console.log('Creating Null CAN Interface');
-        return new NullCANInterface();
-    }
-  }
-}
+import { ICANInterface, CANInterfaceFactory } from '../lib/can-interface';
 
 interface WebSocketMessage {
   type:
@@ -185,8 +10,12 @@ interface WebSocketMessage {
     | 'start'
     | 'stop'
     | 'heartbeat'
-    | 'send_frame';
+    | 'send_frame'
+    | 'get_interface_info'
+    | 'set_filters';
   messageIds?: number[];
+  busFilter?: number[];
+  idFilter?: number[];
   frame?: {
     id: number;
     data?: number[] | Uint8Array | Record<string, number>;
@@ -197,43 +26,126 @@ interface WebSocketMessage {
 }
 
 interface WebSocketResponse {
-  type: 'frame' | 'status' | 'error' | 'heartbeat' | 'send_frame_response';
+  type:
+    | 'frame'
+    | 'status'
+    | 'error'
+    | 'heartbeat'
+    | 'send_frame_response'
+    | 'interface_info'
+    | 'filters_updated';
   data?: {
     connected?: boolean;
     interface?: string;
     streaming?: boolean;
     frame?: CANFrame;
+    supportedTypes?: string[];
+    currentFilters?: {
+      busFilter?: number[];
+      idFilter?: number[];
+    };
   };
   error?: string;
   success?: boolean;
   frame?: CANFrame;
+  // 統計情報用フィールド
+  frameCount?: number;
+  lastFrameTime?: number;
+  clientCount?: number;
+}
+
+/**
+ * WebSocketクライアント情報
+ */
+interface ClientInfo {
+  /** 購読しているCAN ID */
+  subscriptions: Set<number>;
+  /** バスフィルター */
+  busFilter?: number[];
+  /** IDフィルター */
+  idFilter?: number[];
+  /** 最後のハートビート時刻 */
+  lastHeartbeat: number;
+  /** メッセージキュー（バックプレッシャー対応） */
+  messageQueue: WebSocketResponse[];
+  /** キューの最大サイズ */
+  maxQueueSize: number;
 }
 
 class CANWebSocketServer {
   private wss: WebSocketServer;
-  private canInterface: NullCANInterface | VirtualCANInterface;
-  private clients: Map<WebSocket, Set<number>> = new Map();
+  private canInterface: ICANInterface;
+  private clients: Map<WebSocket, ClientInfo> = new Map();
   private isStreaming = false;
+  private frameCount = 0;
+  private lastFrameTime = 0;
+  private readonly HEARTBEAT_INTERVAL = 30000; // 30秒
+  private readonly MAX_QUEUE_SIZE = 1000; // クライアントあたりの最大キューサイズ
+  private heartbeatTimer?: NodeJS.Timeout;
 
   constructor(server: Server) {
     this.wss = new WebSocketServer({ server, path: '/ws' });
 
-    // 環境変数からCANインターフェースタイプを取得（デフォルト: none）
-    const interfaceType = process.env.CAN_INTERFACE_TYPE || 'none';
+    // 環境変数からCANインターフェースタイプを取得
+    const interfaceType = this.getInterfaceType();
     console.log(`Initializing CAN interface with type: ${interfaceType}`);
 
-    this.canInterface = CANInterfaceFactory.create(interfaceType);
+    this.canInterface = this.createCANInterface(interfaceType);
 
     this.setupWebSocketServer();
     this.setupCANInterface();
+    this.setupHeartbeatTimer();
+  }
+
+  /**
+   * 環境変数からインターフェースタイプを取得
+   */
+  private getInterfaceType(): 'null' | 'virtual' | 'hardware' | 'openpilot' {
+    const type = process.env.CAN_INTERFACE_TYPE?.toLowerCase() || 'virtual';
+
+    switch (type) {
+      case 'null':
+      case 'virtual':
+      case 'hardware':
+      case 'openpilot':
+        return type;
+      case 'none':
+        return 'null'; // noneはnullインターフェースにマップ
+      default:
+        console.warn(`Unknown interface type: ${type}, defaulting to virtual`);
+        return 'virtual';
+    }
+  }
+
+  /**
+   * CANインターフェースを作成（エラーハンドリング付き）
+   */
+  private createCANInterface(
+    type: 'null' | 'virtual' | 'hardware' | 'openpilot'
+  ): ICANInterface {
+    try {
+      const iface = CANInterfaceFactory.create(type);
+      console.log(`Created CAN interface: ${iface.getName()}`);
+      return iface;
+    } catch (error) {
+      console.error(`Failed to create ${type} interface:`, error);
+      console.log('Falling back to virtual interface');
+      return CANInterfaceFactory.create('virtual');
+    }
   }
 
   private setupWebSocketServer(): void {
     this.wss.on('connection', (ws: WebSocket) => {
       console.log('New WebSocket client connected');
 
-      // 新しいクライアントを登録（全メッセージを購読）
-      this.clients.set(ws, new Set());
+      // 新しいクライアントを登録
+      const clientInfo: ClientInfo = {
+        subscriptions: new Set(),
+        lastHeartbeat: Date.now(),
+        messageQueue: [],
+        maxQueueSize: this.MAX_QUEUE_SIZE,
+      };
+      this.clients.set(ws, clientInfo);
 
       // 接続状態を送信
       this.sendToClient(ws, {
@@ -302,24 +214,38 @@ class CANWebSocketServer {
     switch (message.type) {
       case 'subscribe':
         if (message.messageIds) {
-          const subscriptions = this.clients.get(ws) || new Set();
-          message.messageIds.forEach((id) => subscriptions.add(id));
-          this.clients.set(ws, subscriptions);
-          console.log(
-            `Client subscribed to message IDs: ${message.messageIds.join(', ')}`
-          );
+          const clientInfo = this.clients.get(ws);
+          if (clientInfo) {
+            message.messageIds.forEach((id) =>
+              clientInfo.subscriptions.add(id)
+            );
+            console.log(
+              `Client subscribed to message IDs: ${message.messageIds.join(', ')}`
+            );
+          }
         }
         break;
 
       case 'unsubscribe':
         if (message.messageIds) {
-          const subscriptions = this.clients.get(ws) || new Set();
-          message.messageIds.forEach((id) => subscriptions.delete(id));
-          this.clients.set(ws, subscriptions);
-          console.log(
-            `Client unsubscribed from message IDs: ${message.messageIds.join(', ')}`
-          );
+          const clientInfo = this.clients.get(ws);
+          if (clientInfo) {
+            message.messageIds.forEach((id) =>
+              clientInfo.subscriptions.delete(id)
+            );
+            console.log(
+              `Client unsubscribed from message IDs: ${message.messageIds.join(', ')}`
+            );
+          }
         }
+        break;
+
+      case 'set_filters':
+        this.handleSetFilters(ws, message);
+        break;
+
+      case 'get_interface_info':
+        this.handleGetInterfaceInfo(ws);
         break;
 
       case 'start':
@@ -333,6 +259,10 @@ class CANWebSocketServer {
         break;
 
       case 'heartbeat':
+        const clientInfo = this.clients.get(ws);
+        if (clientInfo) {
+          clientInfo.lastHeartbeat = Date.now();
+        }
         this.sendToClient(ws, { type: 'heartbeat' });
         break;
 
@@ -422,14 +352,14 @@ class CANWebSocketServer {
     frame: CANFrame,
     excludeClient: WebSocket
   ): void {
-    this.clients.forEach((subscriptions, client) => {
+    this.clients.forEach((clientInfo, client) => {
       // 送信者は除外
       if (client === excludeClient) return;
 
-      // クライアントが全メッセージを購読しているか、特定のIDを購読しているかチェック
-      if (subscriptions.size === 0 || subscriptions.has(frame.id)) {
+      // フィルタリングチェック
+      if (this.shouldSendFrameToClient(frame, clientInfo)) {
         if (client.readyState === WebSocket.OPEN) {
-          this.sendToClient(client, {
+          this.sendToClientWithQueue(client, {
             type: 'frame',
             data: { frame },
           });
@@ -487,11 +417,14 @@ class CANWebSocketServer {
   }
 
   private broadcastFrame(frame: CANFrame): void {
-    this.clients.forEach((subscriptions, client) => {
-      // クライアントが全メッセージを購読しているか、特定のIDを購読しているかチェック
-      if (subscriptions.size === 0 || subscriptions.has(frame.id)) {
+    this.frameCount++;
+    this.lastFrameTime = Date.now();
+
+    this.clients.forEach((clientInfo, client) => {
+      // フィルタリングチェック
+      if (this.shouldSendFrameToClient(frame, clientInfo)) {
         if (client.readyState === WebSocket.OPEN) {
-          this.sendToClient(client, {
+          this.sendToClientWithQueue(client, {
             type: 'frame',
             data: { frame },
           });
@@ -500,13 +433,82 @@ class CANWebSocketServer {
     });
   }
 
+  /**
+   * フレームをクライアントに送信するかどうかを判定
+   */
+  private shouldSendFrameToClient(
+    frame: CANFrame,
+    clientInfo: ClientInfo
+  ): boolean {
+    // IDフィルターチェック
+    if (clientInfo.idFilter && clientInfo.idFilter.length > 0) {
+      if (!clientInfo.idFilter.includes(frame.id)) {
+        return false;
+      }
+    }
+
+    // 購読チェック（全購読または特定ID購読）
+    if (
+      clientInfo.subscriptions.size > 0 &&
+      !clientInfo.subscriptions.has(frame.id)
+    ) {
+      return false;
+    }
+
+    // TODO: バスフィルターは将来的にCANFrameにバス情報を追加して実装
+    return true;
+  }
+
+  /**
+   * キュー付きでクライアントにメッセージを送信（バックプレッシャー対応）
+   */
+  private sendToClientWithQueue(
+    client: WebSocket,
+    response: WebSocketResponse
+  ): void {
+    const clientInfo = this.clients.get(client);
+    if (!clientInfo) return;
+
+    // キューサイズチェック
+    if (clientInfo.messageQueue.length >= clientInfo.maxQueueSize) {
+      // 古いメッセージを削除（FIFO）
+      clientInfo.messageQueue.shift();
+    }
+
+    // メッセージをキューに追加
+    clientInfo.messageQueue.push(response);
+
+    // 即座に送信を試行
+    this.flushClientQueue(client);
+  }
+
+  /**
+   * クライアントのメッセージキューをフラッシュ
+   */
+  private flushClientQueue(client: WebSocket): void {
+    const clientInfo = this.clients.get(client);
+    if (!clientInfo || client.readyState !== WebSocket.OPEN) return;
+
+    while (clientInfo.messageQueue.length > 0) {
+      const message = clientInfo.messageQueue.shift()!;
+      try {
+        client.send(JSON.stringify(message));
+      } catch (error) {
+        console.error('Failed to send queued message:', error);
+        // 送信に失敗した場合、メッセージをキューの先頭に戻す
+        clientInfo.messageQueue.unshift(message);
+        break;
+      }
+    }
+  }
+
   private broadcastStatus(status: {
     streaming?: boolean;
     interface?: string;
   }): void {
     this.clients.forEach((_, client) => {
       if (client.readyState === WebSocket.OPEN) {
-        this.sendToClient(client, {
+        this.sendToClientWithQueue(client, {
           type: 'status',
           data: status,
         });
@@ -517,7 +519,7 @@ class CANWebSocketServer {
   private broadcastError(error: string): void {
     this.clients.forEach((_, client) => {
       if (client.readyState === WebSocket.OPEN) {
-        this.sendToClient(client, {
+        this.sendToClientWithQueue(client, {
           type: 'error',
           error,
         });
@@ -531,6 +533,109 @@ class CANWebSocketServer {
     } catch (error) {
       console.error('Failed to send message to client:', error);
     }
+  }
+
+  /**
+   * フィルター設定を処理
+   */
+  private handleSetFilters(ws: WebSocket, message: WebSocketMessage): void {
+    const clientInfo = this.clients.get(ws);
+    if (!clientInfo) return;
+
+    if (message.busFilter) {
+      clientInfo.busFilter = message.busFilter;
+    }
+
+    if (message.idFilter) {
+      clientInfo.idFilter = message.idFilter;
+    }
+
+    console.log(
+      `Updated filters for client: busFilter=${clientInfo.busFilter?.join(', ') || 'none'}, idFilter=${clientInfo.idFilter?.join(', ') || 'none'}`
+    );
+
+    this.sendToClient(ws, {
+      type: 'filters_updated',
+      success: true,
+      data: {
+        currentFilters: {
+          busFilter: clientInfo.busFilter,
+          idFilter: clientInfo.idFilter,
+        },
+      },
+    });
+  }
+
+  /**
+   * インターフェース情報を取得
+   */
+  private handleGetInterfaceInfo(ws: WebSocket): void {
+    this.sendToClient(ws, {
+      type: 'interface_info',
+      data: {
+        interface: this.canInterface.getName(),
+        connected: this.canInterface.isConnected(),
+        streaming: this.isStreaming,
+        supportedTypes: ['null', 'virtual', 'hardware', 'openpilot'],
+      },
+      success: true,
+      // 統計情報はdata層の外に移動して、簡潔なレスポンスを作成
+      frameCount: this.frameCount,
+      lastFrameTime: this.lastFrameTime,
+      clientCount: this.clients.size,
+    });
+  }
+
+  /**
+   * ハートビートタイマーを設定
+   */
+  private setupHeartbeatTimer(): void {
+    this.heartbeatTimer = setInterval(() => {
+      this.checkClientHeartbeats();
+    }, this.HEARTBEAT_INTERVAL);
+  }
+
+  /**
+   * クライアントのハートビートをチェック
+   */
+  private checkClientHeartbeats(): void {
+    const now = Date.now();
+    const timeout = this.HEARTBEAT_INTERVAL * 2; // ハートビートタイムアウト
+
+    this.clients.forEach((clientInfo, client) => {
+      if (now - clientInfo.lastHeartbeat > timeout) {
+        console.log('Client heartbeat timeout, closing connection');
+        client.terminate();
+        this.clients.delete(client);
+      }
+    });
+  }
+
+  /**
+   * サーバーのクリーンアップ
+   */
+  public async cleanup(): Promise<void> {
+    console.log('Cleaning up WebSocket server...');
+
+    if (this.heartbeatTimer) {
+      clearInterval(this.heartbeatTimer);
+      this.heartbeatTimer = undefined;
+    }
+
+    // 全クライアントを閉じる
+    this.clients.forEach((_, client) => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.close();
+      }
+    });
+    this.clients.clear();
+
+    // CANインターフェースを停止
+    if (this.isStreaming) {
+      await this.stopStreaming();
+    }
+
+    console.log('WebSocket server cleanup completed');
   }
 }
 

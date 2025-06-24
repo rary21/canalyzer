@@ -510,6 +510,11 @@ export function useWebSocket(
     stopStreaming,
     subscribe,
     unsubscribe,
+    sendFrame: () => {}, // TODO: 実装待ち
+    setFilters: () => {}, // TODO: 実装待ち
+    getInterfaceInfo: () => {}, // TODO: 実装待ち
     stats,
+    filters: {}, // TODO: 実装待ち
+    interfaceInfo: null, // TODO: 実装待ち
   };
 }

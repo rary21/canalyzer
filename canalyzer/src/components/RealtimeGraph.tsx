@@ -11,6 +11,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
+import { format } from 'date-fns';
 import { SelectableSignal, GraphDataPoint, GraphConfig } from '@/types/graph';
 
 interface RealtimeGraphProps {
@@ -42,11 +43,6 @@ const RealtimeGraph = React.memo(
 
       return data
         .filter((point) => point.timestamp >= startTime)
-        .map((point) => ({
-          ...point,
-          // タイムスタンプを相対時間（秒）に変換
-          time: (point.timestamp - startTime) / 1000,
-        }))
         .sort((a, b) => a.timestamp - b.timestamp);
     }, [data, config.timeRange, selectedSignals.length]);
 
@@ -109,7 +105,10 @@ const RealtimeGraph = React.memo(
         return (
           <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
             <p className="text-sm font-medium text-gray-900 mb-2">
-              時刻: {typeof label === 'number' ? label.toFixed(2) : label}秒
+              時刻:{' '}
+              {typeof label === 'number'
+                ? format(label, 'HH:mm:ss.SSS')
+                : label}
             </p>
             {payload.map((entry, index: number) => {
               const signal = selectedSignals.find(
@@ -208,11 +207,36 @@ const RealtimeGraph = React.memo(
                   <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                 )}
                 <XAxis
-                  dataKey="time"
+                  dataKey="timestamp"
                   stroke="#6b7280"
                   fontSize={12}
-                  tickFormatter={(value) => `${value.toFixed(1)}s`}
-                  domain={[0, config.timeRange / 1000]}
+                  type="number"
+                  domain={['dataMin', 'dataMax']}
+                  tickFormatter={(value) => {
+                    // 日時フォーマット設定に基づいてフォーマット
+                    if (config.dateFormat === 'time') {
+                      return format(value, 'HH:mm:ss');
+                    } else if (config.dateFormat === 'datetime') {
+                      return format(value, 'MM/dd HH:mm');
+                    } else if (
+                      config.dateFormat === 'custom' &&
+                      config.customDateFormat
+                    ) {
+                      return format(value, config.customDateFormat);
+                    } else {
+                      // autoまたは未設定の場合、時間範囲に応じて選択
+                      if (config.timeRange <= 60000) {
+                        // 1分以下: HH:mm:ss
+                        return format(value, 'HH:mm:ss');
+                      } else if (config.timeRange <= 3600000) {
+                        // 1時間以下: HH:mm
+                        return format(value, 'HH:mm');
+                      } else {
+                        // 1時間超: MM/dd HH:mm
+                        return format(value, 'MM/dd HH:mm');
+                      }
+                    }
+                  }}
                 />
                 <YAxis
                   stroke="#6b7280"

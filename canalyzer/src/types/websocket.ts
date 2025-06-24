@@ -6,24 +6,49 @@ export type WebSocketMessageType =
   | 'unsubscribe'
   | 'start'
   | 'stop'
-  | 'heartbeat';
+  | 'heartbeat'
+  | 'send_frame'
+  | 'get_interface_info'
+  | 'set_filters';
 
 // WebSocketメッセージの型定義（ジェネリクス対応）
 export interface WebSocketMessage<T = WebSocketMessageType> {
   type: T;
   messageIds?: number[];
+  busFilter?: number[];
+  idFilter?: number[];
+  frame?: {
+    id: number;
+    data?: number[] | Uint8Array | Record<string, number>;
+    timestamp?: number;
+    extended?: boolean;
+    dlc?: number;
+  };
   payload?: Record<string, unknown>;
 }
 
 // WebSocketレスポンスの基本型
-export type WebSocketResponseType = 'frame' | 'status' | 'error' | 'heartbeat';
+export type WebSocketResponseType =
+  | 'frame'
+  | 'status'
+  | 'error'
+  | 'heartbeat'
+  | 'send_frame_response'
+  | 'interface_info'
+  | 'filters_updated';
 
 // WebSocketレスポンスの型定義（ジェネリクス対応）
 export interface WebSocketResponse<T = WebSocketResponseData> {
   type: WebSocketResponseType;
   data?: T;
   error?: string;
+  success?: boolean;
+  frame?: CANFrame;
   timestamp?: number;
+  // 統計情報用フィールド
+  frameCount?: number;
+  lastFrameTime?: number;
+  clientCount?: number;
 }
 
 export interface WebSocketResponseData {
@@ -31,6 +56,14 @@ export interface WebSocketResponseData {
   interface?: string;
   streaming?: boolean;
   frame?: CANFrame;
+  supportedTypes?: string[];
+  frameCount?: number;
+  lastFrameTime?: number;
+  clientCount?: number;
+  currentFilters?: {
+    busFilter?: number[];
+    idFilter?: number[];
+  };
 }
 
 // WebSocket接続の状態
@@ -69,6 +102,9 @@ export interface WebSocketHookReturn {
   stopStreaming: () => void;
   subscribe: (messageIds: number[]) => void;
   unsubscribe: (messageIds: number[]) => void;
+  sendFrame: (frame: CANFrame) => void;
+  setFilters: (filters: { busFilter?: number[]; idFilter?: number[] }) => void;
+  getInterfaceInfo: () => void;
 
   // 統計情報
   stats: {
@@ -79,6 +115,20 @@ export interface WebSocketHookReturn {
     lastError: string | null;
     lastErrorTime: number | null;
   };
+
+  // フィルター設定
+  filters: {
+    busFilter?: number[];
+    idFilter?: number[];
+  };
+
+  // インターフェース情報
+  interfaceInfo: {
+    name: string;
+    supportedTypes: string[];
+    frameCount: number;
+    lastFrameTime: number;
+  } | null;
 }
 
 // データマップのジェネリクス型
@@ -102,9 +152,25 @@ export interface RealtimeDataContextType {
   stopRealtime: () => void;
   subscribe: (messageIds: number[]) => void;
   unsubscribe: (messageIds: number[]) => void;
+  sendFrame: (frame: CANFrame) => void;
+  setFilters: (filters: { busFilter?: number[]; idFilter?: number[] }) => void;
 
   // 統計情報
   stats: RealtimeStats;
+
+  // フィルター設定
+  filters: {
+    busFilter?: number[];
+    idFilter?: number[];
+  };
+
+  // インターフェース情報
+  interfaceInfo: {
+    name: string;
+    supportedTypes: string[];
+    frameCount: number;
+    lastFrameTime: number;
+  } | null;
 }
 
 // 統計情報のジェネリクス型
